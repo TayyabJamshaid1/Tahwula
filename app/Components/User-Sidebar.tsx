@@ -45,7 +45,7 @@ const base = "/simpleUser";
 
 const navigationItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: base + "/dashboard" },
-  { name: "Perspectives", icon: User, href: base + "/profile" },
+  { name: "Perspectives", icon: User, href: base + "/perspective" },
   { name: "Tasks", icon: Plus, href: base + "/jobs/createJobs" },
   { name: "Documents", icon: Briefcase, href: base + "/jobs/listJobs" },
   { name: "Reports", icon: Bookmark, href: base + "/saved-candidates" },
