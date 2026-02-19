@@ -218,7 +218,7 @@ const EvidencePage = () => {
                     Roadmap_Version1.Docx Uploaded By Rami AlSharif
                   </p>
                 </div>
-                <span className="text-xs text-[#8597A8] font-normal whitespace-nowrap">
+                <span className="text-xs text-[#8597A8] font-normal whitespace-nowrap lg:pt-1">
                   5 Mins Ago
                 </span>
               </div>
@@ -229,7 +229,7 @@ const EvidencePage = () => {
                     Roadmap_Version1.Docx Uploaded By Rami AlSharif
                   </p>
                 </div>
-                <span className="text-xs text-[#8597A8] font-normal whitespace-nowrap">
+                <span className="text-xs text-[#8597A8] font-normal whitespace-nowrap lg:pt-1">
                   5 Mins Ago
                 </span>
               </div>
@@ -240,7 +240,7 @@ const EvidencePage = () => {
                     Roadmap_Version1.Docx Uploaded By Rami AlSharif
                   </p>
                 </div>
-                <span className="text-xs text-[#8597A8] font-normal whitespace-nowrap">
+                <span className="text-xs text-[#8597A8] font-normal whitespace-nowrap lg:pt-1">
                   5 Mins Ago
                 </span>
               </div>
