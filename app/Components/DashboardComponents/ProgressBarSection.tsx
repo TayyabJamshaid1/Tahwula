@@ -54,7 +54,7 @@ export default function ProgressBarSection() {
               className="flex flex-col items-center text-center w-[140px]"
             > 
              <div
-                className={`w-3.5 h-3.5 rounded-full bg-white ${!item.active && "bg-[#DB1F26]"}`}
+                className={`w-3.5 h-3.5 rounded-full  ${!item.active ? "bg-[#DB1F26]":"bg-white"}`}
                
               />
               {/* <div
