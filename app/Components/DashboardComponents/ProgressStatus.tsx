@@ -136,9 +136,8 @@ function BlueCard({ title, percent }: any) {
         text-white
         text-center
         shadow-sm
-        h-[85px]
-        flex flex-col items-center justify-center
-        gap-1.5
+        h-[94px]
+        flex flex-col items-center justify-between pt-4 pb-3
       "
       style={{ background: COLORS.headerBlue }}
     >
@@ -204,7 +203,7 @@ function Column({ col }: any) {
   return (
     <div className="flex flex-col h-full">
       {/* Blue Card - fixed height */}
-      <div className="h-[85px] mb-3">
+      <div className="h-[94px] mb-3">
         <BlueCard title={col.title} percent={col.percent} />
       </div>
 
