@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
 /* ================= COLORS ================= */
 
@@ -22,7 +22,7 @@ const columns = [
     sections: [
       { name: "Digital Transformation", nums: [1, 2, 3] },
       { name: "Digital Governance", nums: [1, 2, 3] },
-      { name: "Enterprise Architecture", nums: [1, 2] },
+      { name: "Enterprise Architecture", nums: [1, 2,3,4] },
     ],
   },
   {
@@ -30,53 +30,53 @@ const columns = [
     percent: "70.83%",
     sections: [
       { name: "Digital Culture", nums: [1, 2, 3] },
-      { name: "Leadership Development", nums: [1, 2, 3] },
+      { name: "Leadership Development", nums: [1, 2, 3,4] },
       { name: "Skills Capacity Building", nums: [1, 2, 3] },
     ],
   },
   {
     title: "Operations And Execution",
     percent: "80.00%",
-    sections: [{ name: "Business Processes", nums: [1, 2, 3] }],
+    sections: [{ name: "Business Processes", nums: [1, 2, 3,4] }],
   },
   {
     title: "Business Continuity",
     percent: "90.59%",
     sections: [
-      { name: "IT Infrastructure", nums: [1, 2, 3] },
-      { name: "Business Continuity", nums: [1, 2, 3] },
-      { name: "Cloud Infrastructure", nums: [1, 2, 3] },
+      { name: "Risk Management", nums: [1, 2, 3,4,5] },
+      { name: "Business Continuity", nums: [1, 2, 3,4,5,6,7] },
     ],
   },
   {
     title: "Information Technology",
     percent: "75.00%",
     sections: [
-      { name: "Software Platforms", nums: [1, 2, 3] },
-      { name: "Cloud Infrastructure", nums: [1, 2, 3] },
+      { name: "Support Systems", nums: [1, 2, 3,4,5] },
+      { name: "IT Infrastructure", nums: [1, 2, 3,4,5,6,7] },
+            { name: " Cloud Infrastructure", nums: [1, 2, 3] },
+
     ],
   },
   {
     title: "Comprehensive Governance",
     percent: "64.44%",
-    sections: [{ name: "Governance Platforms", nums: [1, 2, 3] }],
+    sections: [{ name: "Governance Platforms", nums: [1, 2, 3,4,5,6,7,8,9] }],
   },
   {
     title: "Channels And Services",
     percent: "100%",
     sections: [
-      { name: "Digital Channels", nums: [1, 2, 3] },
-      { name: "User Experience", nums: [1, 2, 3] },
-      { name: "Open Data", nums: [1, 2, 3] },
+      { name: "Service Quality", nums: [1, 2, 3] },
+      { name: "Digital Channels", nums: [1, 2, 3,4] },
     ],
   },
   {
     title: "Beneficiary Centralization",
     percent: "60.00%",
     sections: [
-      { name: "Creative Solutions", nums: [1, 2, 3] },
-      { name: "Creative Solutions", nums: [1, 2, 3] },
-      { name: "Creative Solutions", nums: [1, 2, 3] },
+      { name: "User Engagement", nums: [1, 2, 3,4] },
+      { name: "User Relationship", nums: [1, 2, 3] },
+      { name: " User Experience", nums: [1, 2, 3,4,5] },
     ],
   },
   {
@@ -84,17 +84,16 @@ const columns = [
     percent: "87.50%",
     sections: [
       { name: "Data Governance", nums: [1, 2, 3] },
-      { name: "Open Data", nums: [1, 2, 3] },
-      { name: "Innovation", nums: [1, 2, 3] },
+      { name: " Data Usage & Availability", nums: [1, 2, 3] },
+      { name: " Open Data", nums: [1, 2, 3] },
     ],
   },
   {
     title: "Research And Innovation",
     percent: "17.65%",
     sections: [
-      { name: "Creative Solutions", nums: [1, 2, 3] },
-      { name: "Innovation", nums: [1, 2, 3] },
-      { name: "Research", nums: [1, 2, 3] },
+      { name: "Innovation", nums: [1, 2, 3,4] },
+      { name: " Creative Solutions", nums: [1, 2] },
     ],
   },
 ];
@@ -175,11 +174,10 @@ function Number({ n }: { n: number }) {
 
 function Section({ data }: any) {
   return (
-    <Card className="rounded-[10px] shadow-sm border border-[#E0E8ED] bg-[#F5F8FB] h-full">
-      <CardContent className="p-3 h-full flex flex-col">
-        <p className="text-[11px] font-medium text-gray-700 mb-2">
-          {data.name}
-        </p>
+    <Card className="rounded-[10px] shadow-sm border border-[#E0E8ED] bg-[#F5F8FB] h-full py-2">
+        <CardTitle className="text-[10px] font-normal text-center text-[#1D3557]"> {data.name}</CardTitle>
+      <CardContent className="h-full flex flex-col justify-end items-center">
+       
         <div className="flex gap-1.5 flex-wrap">
           {data.nums.map((n: number) => (
             <Number key={n} n={n} />
@@ -231,7 +229,7 @@ function Column({ col }: any) {
 
 export default function ProgressStatus() {
   return (
-    <div className="p-5 bg-white border border-gray-200 rounded-[10px] max-w-full h-full">
+    <div className="mt-4 p-5 bg-white border border-[#E0E8ED] rounded-[10px] max-w-full h-full">
       <Header />
 
       <div
