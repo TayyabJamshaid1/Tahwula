@@ -174,7 +174,7 @@ function Number({ n }: { n: number }) {
 function Section({ data }: any) {
   return (
     <Card className="rounded-[10px] shadow-sm border border-[#E0E8ED] bg-[#F5F8FB] h-full py-2">
-        <CardTitle className="text-[10px] font-normal text-center text-[#1D3557]"> {data.name}</CardTitle>
+        <CardTitle className="text-[10px] font-normal text-center text-[#1D3557] px-2"> {data.name}</CardTitle>
       <CardContent className="h-full flex flex-col justify-end items-center">
        
         <div className="flex gap-1.5 flex-wrap">
