@@ -325,9 +325,9 @@ const THREE_PER_ROW_SECTIONS = [
 /* ================= HEADER ================= */
 function Header() {
   return (
-    <div className="flex justify-between items-center mb-6">
+    <div className="flex justify-between items-center lg:mb-6 flex-col xl:flex-row mb-3">
       <h1 className="text-[16px] font-bold text-[#1D3557]">Progress Status</h1>
-      <div className="flex gap-6 text-sm text-gray-600 flex-wrap">
+      <div className="flex xl:gap-6 text-sm text-gray-600 flex-wrap justify-center xl:justify-start pt-1 xl:pt-0 gap-4 ">
         <Legend color="bg-[#8597A8]" label="Not Started" />
         <Legend color="bg-[#F59F0A]" label="In Progress" />
         <Legend color="bg-[#1EA54E]" label="Completed" />
