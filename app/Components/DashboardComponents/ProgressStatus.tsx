@@ -19,7 +19,7 @@ const columns = [
     sections: [
       {
         name: "Digital Transformation",
-        align: "center",
+        align: "bottom",
         nums: [
           { tnumber: 1, color: "#1EA54E" },
           { tnumber: 2, color: "#1EA54E" },
@@ -28,7 +28,7 @@ const columns = [
       },
       {
         name: "Digital Governance",
-        align: "center",
+        align: "bottom",
         nums: [
           { tnumber: 1, color: "#1EA54E" },
           { tnumber: 2, color: "#1EA54E" },
@@ -53,7 +53,7 @@ const columns = [
     sections: [
       {
         name: "Digital Culture",
-        align: "center",
+        align: "bottom",
         nums: [
           { tnumber: 1, color: "#1EA54E" },
           { tnumber: 2, color: "#F59F0A" },
@@ -72,7 +72,7 @@ const columns = [
       },
       {
         name: "Skills Capacity Building",
-        align: "center",
+        align: "bottom",
         nums: [
           { tnumber: 1, color: "#F59F0A" },
           { tnumber: 2, color: "#F59F0A" },
@@ -116,12 +116,12 @@ const columns = [
         name: "Business Continuity",
         align: "bottom",
         nums: [
-          { tnumber: 1, color: "#8597A8" },
-          { tnumber: 2, color: "#1EA54E" },
+          { tnumber: 1, color: "#1EA54E" },
+          { tnumber: 2, color: "#8597A8" },
           { tnumber: 3, color: "#8597A8" },
           { tnumber: 4, color: "#1EA54E" },
-          { tnumber: 5, color: "#8597A8" },
-          { tnumber: 6, color: "#1EA54E" },
+          { tnumber: 5, color: "#1EA54E" },
+          { tnumber: 6, color: "#8597A8" },
           { tnumber: 7, color: "#1EA54E" },
         ],
       },
@@ -133,9 +133,9 @@ const columns = [
     sections: [
       {
         name: "Support Systems",
-        align: "center",
+        align: "bottom",
         nums: [
-          { tnumber: 1, color: "#1EA54E" },
+          { tnumber: 1, color: "#0078D7" },
           { tnumber: 2, color: "#1EA54E" },
           { tnumber: 3, color: "#1EA54E" },
           { tnumber: 4, color: "#1EA54E" },
@@ -148,16 +148,16 @@ const columns = [
         nums: [
           { tnumber: 1, color: "#1EA54E" },
           { tnumber: 2, color: "#1EA54E" },
-          { tnumber: 3, color: "#0078D7" },
+          { tnumber: 3, color: "#1EA54E" },
           { tnumber: 4, color: "#1EA54E" },
-          { tnumber: 5, color: "#1EA54E" },
-          { tnumber: 6, color: "#0078D7" },
+          { tnumber: 5, color: "#0078D7" },
+          { tnumber: 6, color: "#1EA54E" },
           { tnumber: 7, color: "#1EA54E" },
         ],
       },
       {
         name: "Cloud Infrastructure",
-        align: "center",
+        align: "bottom",
         nums: [
           { tnumber: 1, color: "#1EA54E" },
           { tnumber: 2, color: "#1EA54E" },
@@ -172,7 +172,7 @@ const columns = [
     sections: [
       {
         name: "Governance Platforms",
-        align: "bottom",
+        align: "center",
         nums: [
           { tnumber: 1, color: "#1EA54E" },
           { tnumber: 2, color: "#1EA54E" },
@@ -218,7 +218,7 @@ const columns = [
     sections: [
       {
         name: "User Engagement",
-        align: "center",
+        align: "bottom",
         nums: [
           { tnumber: 1, color: "#1EA54E" },
           { tnumber: 2, color: "#F59F0A" },
@@ -228,7 +228,7 @@ const columns = [
       },
       {
         name: "User Relationship",
-        align: "center",
+        align: "bottom",
         nums: [
           { tnumber: 1, color: "#1EA54E" },
           { tnumber: 2, color: "#F59F0A" },
@@ -254,7 +254,7 @@ const columns = [
     sections: [
       {
         name: "Data Governance",
-        align: "center",
+        align: "bottom",
         nums: [
           { tnumber: 1, color: "#1EA54E" },
           { tnumber: 2, color: "#F59F0A" },
@@ -263,7 +263,7 @@ const columns = [
       },
       {
         name: "Data Usage & Availability",
-        align: "center",
+        align: "bottom",
         nums: [
           { tnumber: 1, color: "#1EA54E" },
           { tnumber: 2, color: "#F59F0A" },
@@ -272,7 +272,7 @@ const columns = [
       },
       {
         name: "Open Data",
-        align: "center",
+        align: "bottom",
         nums: [
           { tnumber: 1, color: "#1EA54E" },
           { tnumber: 2, color: "#1EA54E" },
@@ -287,7 +287,7 @@ const columns = [
     sections: [
       {
         name: "Innovation",
-        align: "bottom",
+        align: "center",
         nums: [
           { tnumber: 1, color: "#F50A0A" },
           { tnumber: 2, color: "#F50A0A" },
@@ -297,7 +297,7 @@ const columns = [
       },
       {
         name: "Creative Solutions",
-        align: "center",
+        align: "bottom",
         nums: [
           { tnumber: 1, color: "#F59F0A" },
           { tnumber: 2, color: "#F50A0A" },
@@ -392,8 +392,8 @@ function Section({ data }: any) {
       <CardTitle className="text-[10px] font-normal text-center text-[#1D3557] px-2 shrink-0">
         {data.name}
       </CardTitle>
-      <CardContent className="flex-1 flex flex-col justify-center py-1 min-h-[60px]">
-        <div className={`flex flex-col gap-1.5 w-full ${data.align === "bottom" ? "justify-end" : "justify-center"} h-full`}>
+      <CardContent className="flex-1 flex flex-col justify-center py-1 min-h-[60px] p-0">
+        <div className={`flex flex-col gap-1.5 ${data.align === "bottom" ? "justify-end" : "justify-center"} h-full`}>
           {rows.map((row, rowIndex) => (
             <div key={rowIndex} className="flex gap-1.5 justify-center">
               {row.map((item: any, index: number) => (
