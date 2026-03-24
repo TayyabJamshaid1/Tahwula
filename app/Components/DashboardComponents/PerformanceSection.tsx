@@ -35,7 +35,7 @@ export default function PerformanceSection() {
           12-Month Performance
         </h3>
 
-        <div className="h-[260px] ">
+        <div className="h-65 ">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={performanceData}
