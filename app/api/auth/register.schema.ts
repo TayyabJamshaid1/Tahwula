@@ -19,7 +19,7 @@ export const registerUserSchema = z.object({
   phoneNumber: z
     .string()
     .trim()
-    .min(11, "Username must be at least 3 characters long")
+    .min(11, "Phone number must be at least 11 characters long")
    ,
   email: z
     .email("Please enter a valid email address ")

@@ -46,13 +46,16 @@ const RegisterComponet: React.FC = () => {
 
   const onSubmit = async (data: RegisterForm) => {
     const res = await dispatch(registerThunk(data)).unwrap();
-
-    toast.success(res.message);
-    console.log(res, "res");
-
-    if (res?.user?.role === "simpleUser") {
-      router.push("/simpleUser/dashboard");
-    }
+     if (res?.success) {
+         toast.success(res?.message);
+         console.log(res, "res");
+   
+         if (res?.user?.role == "simpleUser") {
+           router.replace("/simpleUser/dashboard");
+         }
+       } else {
+         toast.error(res?.message);
+       }
   };
 
   return (
