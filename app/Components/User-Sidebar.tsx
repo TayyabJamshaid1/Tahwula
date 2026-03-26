@@ -46,10 +46,10 @@ const base = "/simpleUser";
 const navigationItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: base + "/dashboard" },
   { name: "Perspectives", icon: User, href: base + "/perspective" },
-  { name: "Tasks", icon: Plus, href: base + "/jobs/createJobs" },
-  { name: "Documents", icon: Briefcase, href: base + "/jobs/listJobs" },
-  { name: "Reports", icon: Bookmark, href: base + "/saved-candidates" },
-  { name: "Users & roles", icon: CreditCard, href: base + "/billing" },
+  { name: "Tasks", icon: Plus, href: base + "/dashboard" },
+  { name: "Documents", icon: Briefcase, href: base + "/dashboard" },
+  { name: "Reports", icon: Bookmark, href: base + "/dashboard" },
+  { name: "Users & roles", icon: CreditCard, href: base + "/dashboard"},
 ];
 
 // Navbar Component
@@ -57,7 +57,7 @@ const Navbar = ({ onMenuClick }: { onMenuClick?: () => void }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  const { mutate: LogoutUser } = useMutation({
+  const { mutate: LogoutUser, isPending } = useMutation({
     mutationFn: () => dispatch(logoutThunk()).unwrap(),
     onSuccess: async (res) => {
       if (res.success) {
@@ -163,8 +163,18 @@ const Navbar = ({ onMenuClick }: { onMenuClick?: () => void }) => {
               className="text-red-600 focus:text-red-600"
               onClick={() => LogoutUser()}
             >
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+              {isPending ? (
+                <div className="flex items-center justify-center gap-2">
+                  Logging out...
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                </div>
+              ) : (
+                <>
+                  {" "}
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </>
+              )}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

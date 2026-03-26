@@ -54,9 +54,6 @@ const ResetComponent: React.FC = () => {
       className="min-h-screen bg-[#1D3557] flex items-center justify-center p-4 bg-cover bg-center"
       style={{ backgroundImage: "url('/IconBackgroundAuth.png')" }}
     >
-      {isSubmitting && (
-        <span className="ml-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-      )}
       <Card className="w-full max-w-md">
         <CardHeader className="w-full text-center flex flex-col items-center ">
           <Image
@@ -162,7 +159,7 @@ const ResetComponent: React.FC = () => {
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full bg-[#1D3557]">
+            <Button type="submit" className="w-full bg-[#1D3557]  hover:bg-[#1D3557]/80">
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
                   Reseting your password...
