@@ -19,8 +19,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { handleForgotPassword } from "@/lib/AuthActions";
 import { ForgotPasswordSchema } from "@/app/api/auth/register.schema";
 import Image from "next/image";
+import { useAppDispatch, useAppSelector } from "@/app/lib/hooks";
+import { forgotPasswordThunk } from "@/app/lib/AuthSlice";
+import { useRouter } from "next/navigation";
 
 const ForgotComponent: React.FC = () => {
+  const authLoader: boolean = useAppSelector((s) => s.auth.authLoading);
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -31,19 +38,28 @@ const ForgotComponent: React.FC = () => {
   });
 
   const handleFormSubmit = async (data: any) => {
-    const res = await handleForgotPassword(data);
-    if (res?.success) {
-      toast.success(res?.message);
+    const res: any = await dispatch(forgotPasswordThunk(data));
+
+    if (forgotPasswordThunk.fulfilled.match(res)) {
+      toast.success(res.payload.message);
+      router.push("/login");
     } else {
-      toast.error(res?.message);
+      toast.error(res.payload || "Something went wrong");
     }
   };
-
   return (
     <div
       className="min-h-screen bg-[#1D3557] flex items-center justify-center p-4 bg-cover bg-center"
       style={{ backgroundImage: "url('/IconBackgroundAuth.png')" }}
     >
+      {authLoader && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4">
+            {/* Spinner */}
+            <div className="h-17 w-17 rounded-full border-6 border-[#1D3557] border-t-transparent animate-spin"></div>
+          </div>
+        </div>
+      )}
       <Card className="w-full max-w-md">
         <CardHeader className="w-full text-center flex flex-col items-center ">
           <Image
@@ -90,7 +106,10 @@ const ForgotComponent: React.FC = () => {
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full bg-[#1D3557]  hover:bg-[#1D3557]/80">
+            <Button
+              type="submit"
+              className="w-full bg-[#1D3557]  hover:bg-[#1D3557]/80"
+            >
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
                   Sending Reset Link

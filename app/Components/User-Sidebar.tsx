@@ -21,7 +21,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { logoutThunk } from "../lib/AuthSlice";
-import { useAppDispatch } from "../lib/hooks";
+import { useAppDispatch, useAppSelector } from "../lib/hooks";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -46,10 +46,10 @@ const base = "/simpleUser";
 const navigationItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: base + "/dashboard" },
   { name: "Perspectives", icon: User, href: base + "/perspective" },
-  { name: "Tasks", icon: Plus, href: base + "/dashboard" },
-  { name: "Documents", icon: Briefcase, href: base + "/dashboard" },
-  { name: "Reports", icon: Bookmark, href: base + "/dashboard" },
-  { name: "Users & roles", icon: CreditCard, href: base + "/dashboard"},
+  { name: "Tasks", icon: Plus },
+  { name: "Documents", icon: Briefcase },
+  { name: "Reports", icon: Bookmark },
+  { name: "Users & roles", icon: CreditCard },
 ];
 
 // Navbar Component
@@ -378,6 +378,7 @@ interface UserSidebarProps {
 
 const UserSidebar = ({ children }: UserSidebarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const authLoader: boolean = useAppSelector((s) => s.auth.authLoading);
 
   return (
     <>
@@ -393,6 +394,14 @@ const UserSidebar = ({ children }: UserSidebarProps) => {
         <Navbar onMenuClick={() => setMobileMenuOpen(true)} />
         <main className="flex-1 ">{children}</main>
       </div>
+      {authLoader && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4">
+            {/* Spinner */}
+            <div className="h-17 w-17 rounded-full border-6 border-[#1D3557] border-t-transparent animate-spin"></div>
+          </div>
+        </div>
+       )}
     </>
   );
 };

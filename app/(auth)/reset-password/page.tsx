@@ -17,10 +17,10 @@ import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import { handleresetPassword } from "@/lib/AuthActions";
 import { resetPasswordSchema } from "@/app/api/auth/register.schema";
 import Image from "next/image";
+import { useAppDispatch, useAppSelector } from "@/app/lib/hooks";
+import { resetPasswordThunk } from "@/app/lib/AuthSlice";
 
 const ResetComponent: React.FC = () => {
   const token = useSearchParams().get("token") || "";
@@ -35,17 +35,19 @@ const ResetComponent: React.FC = () => {
     resolver: zodResolver(resetPasswordSchema),
   });
   const router = useRouter();
+  const authLoader: boolean = useAppSelector((s) => s.auth.authLoading);
+  const dispatch = useAppDispatch();
 
   const handleFormSubmit = async (data: any) => {
     const payload = { token, password: data?.password };
-    const res = await handleresetPassword(payload);
-    console.log(res, "res in resett");
 
-    if (res?.success) {
-      toast.success(res?.message);
+    const res: any = await dispatch(resetPasswordThunk(payload));
+
+    if (resetPasswordThunk.fulfilled.match(res)) {
+      toast.success(res.payload.message);
       router.push("/login");
     } else {
-      toast.error(res?.message);
+      toast.error(res.payload || "Something went wrong");
     }
   };
 
@@ -54,6 +56,14 @@ const ResetComponent: React.FC = () => {
       className="min-h-screen bg-[#1D3557] flex items-center justify-center p-4 bg-cover bg-center"
       style={{ backgroundImage: "url('/IconBackgroundAuth.png')" }}
     >
+      {authLoader && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4">
+            {/* Spinner */}
+            <div className="h-17 w-17 rounded-full border-6 border-[#1D3557] border-t-transparent animate-spin"></div>
+          </div>
+        </div>
+      )}
       <Card className="w-full max-w-md">
         <CardHeader className="w-full text-center flex flex-col items-center ">
           <Image
@@ -159,7 +169,10 @@ const ResetComponent: React.FC = () => {
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full bg-[#1D3557]  hover:bg-[#1D3557]/80">
+            <Button
+              type="submit"
+              className="w-full bg-[#1D3557]  hover:bg-[#1D3557]/80"
+            >
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
                   Reseting your password...

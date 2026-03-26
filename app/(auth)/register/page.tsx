@@ -39,7 +39,7 @@ const RegisterComponet: React.FC = () => {
     resolver: zodResolver(registerUserWithConfirmSchema),
   });
   const dispatch = useAppDispatch();
-  const authStatus = useAppSelector((s) => s.auth.status);
+  const authLoader: boolean = useAppSelector((s) => s.auth.authLoading);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -64,6 +64,14 @@ const RegisterComponet: React.FC = () => {
       className="min-h-screen bg-[#1D3557] flex items-center justify-center p-4 bg-cover bg-center"
       style={{ backgroundImage: "url('/IconBackgroundAuth.png')" }}
     >
+      {authLoader && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4">
+            {/* Spinner */}
+            <div className="h-17 w-17 rounded-full border-6 border-[#1D3557] border-t-transparent animate-spin"></div>
+          </div>
+        </div>
+      )}
       <Card className="w-full max-w-lg">
         <CardHeader className="w-full text-center flex flex-col items-center ">
           <Image
