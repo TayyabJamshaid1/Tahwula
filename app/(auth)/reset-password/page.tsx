@@ -1,13 +1,11 @@
 "use client";
 import { Input } from "@/components/ui/input";
-import React, {
-  useState,
-} from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-import { Eye, EyeOff, Lock, Mail, User, UserCheck } from "lucide-react";
+import { Eye, EyeOff, Lock } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -22,10 +20,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { handleresetPassword } from "@/lib/AuthActions";
 import { resetPasswordSchema } from "@/app/api/auth/register.schema";
-
+import Image from "next/image";
 
 const ResetComponent: React.FC = () => {
-  const token = useSearchParams().get("token")||"";
+  const token = useSearchParams().get("token") || "";
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const {
@@ -39,10 +37,7 @@ const ResetComponent: React.FC = () => {
   const router = useRouter();
 
   const handleFormSubmit = async (data: any) => {
-    console.log(data);
-    const payload={token,password:data?.password}
-        console.log(payload);
-
+    const payload = { token, password: data?.password };
     const res = await handleresetPassword(payload);
     console.log(res, "res in resett");
 
@@ -54,27 +49,39 @@ const ResetComponent: React.FC = () => {
     }
   };
 
-console.log(errors);
-
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div
+      className="min-h-screen bg-[#1D3557] flex items-center justify-center p-4 bg-cover bg-center"
+      style={{ backgroundImage: "url('/IconBackgroundAuth.png')" }}
+    >
       {isSubmitting && (
         <span className="ml-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
       )}
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
-            <UserCheck className="w-8 h-8 text-primary-foreground" />
-          </div>
-          <CardTitle className="text-2xl">Join Our Job Portal</CardTitle>
-          <CardDescription>Reset your password to get started</CardDescription>
+        <CardHeader className="w-full text-center flex flex-col items-center ">
+          <Image
+            src="/logo.png"
+            alt="Employers Dashboard Logo"
+            width={100}
+            height={40}
+            className="h-auto w-auto " // Makes white logo if your logo is dark
+            priority
+          />
+          <CardTitle className="text-2xl text-[#1D3557]">
+            Welcome to the Namken Digital Transformation System
+          </CardTitle>
+          <CardDescription className="text-[#1D3557]">
+            Reset your password to get started
+          </CardDescription>
         </CardHeader>
 
         <CardContent>
           <form className="space-y-6" onSubmit={handleSubmit(handleFormSubmit)}>
             {/* Password Field */}
             <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password" className="text-[#1D3557]">
+                Password *
+              </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -114,7 +121,9 @@ console.log(errors);
 
             {/* Confirm Password Field */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password *</Label>
+              <Label htmlFor="confirmPassword" className="text-[#1D3557]">
+                Confirm Password *
+              </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -153,7 +162,7 @@ console.log(errors);
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full bg-[#1D3557]">
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
                   Reseting your password...
@@ -169,8 +178,9 @@ console.log(errors);
                 Dont have an account?
                 <Link
                   href="/register"
-                  className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline"
+                  className="text-[#1D3557] hover:text-[#1D3557]/80 font-medium underline-offset-4 hover:underline"
                 >
+                  {" "}
                   Register here
                 </Link>
               </p>

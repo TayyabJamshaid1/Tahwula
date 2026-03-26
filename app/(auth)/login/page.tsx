@@ -21,6 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginUserSchema } from "@/app/api/auth/register.schema";
 import { useAppDispatch } from "@/app/lib/hooks";
 import { loginThunk } from "@/app/lib/AuthSlice";
+import Image from "next/image";
 
 const LoginComponent: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -38,7 +39,7 @@ const LoginComponent: React.FC = () => {
 
   const handleFormSubmit = async (data: any) => {
     const res = await dispatch(loginThunk(data)).unwrap();
-console.log(res,"ressss in login");
+    console.log(res, "ressss in login");
 
     if (res?.success) {
       toast.success(res?.message);
@@ -53,24 +54,38 @@ console.log(res,"ressss in login");
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div
+      className="min-h-screen bg-[#1D3557] flex items-center justify-center p-4 bg-cover bg-center"
+      style={{ backgroundImage: "url('/IconBackgroundAuth.png')" }}
+    >
       {isSubmitting && (
         <span className="ml-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
       )}
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
-            <UserCheck className="w-8 h-8 text-primary-foreground" />
-          </div>
-          <CardTitle className="text-2xl">Join Our Job Portal</CardTitle>
-          <CardDescription>Login your account to get started</CardDescription>
+      <Card className="w-full max-w-lg">
+        <CardHeader className="w-full text-center flex flex-col items-center ">
+          <Image
+            src="/logo.png"
+            alt="Employers Dashboard Logo"
+            width={100}
+            height={40}
+            className="h-auto w-auto " // Makes white logo if your logo is dark
+            priority
+          />
+          <CardTitle className="text-2xl text-[#1D3557]">
+            Welcome to the Namken Digital Transformation System
+          </CardTitle>
+          <CardDescription className="text-[#1D3557]">
+            Login your account to get started
+          </CardDescription>
         </CardHeader>
 
         <CardContent>
           <form className="space-y-6" onSubmit={handleSubmit(handleFormSubmit)}>
             {/* Email Field */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
+              <Label htmlFor="email" className="text-[#1D3557]">
+                Email Address *
+              </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -96,7 +111,9 @@ console.log(res,"ressss in login");
 
             {/* Password Field */}
             <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password" className="text-[#1D3557]">
+                Password *
+              </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -135,7 +152,7 @@ console.log(res,"ressss in login");
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full bg-[#1D3557] mb-2">
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
                   Logging in account...
@@ -146,43 +163,49 @@ console.log(res,"ressss in login");
               )}
             </Button>
 
-            <div className="text-center">
+            <div className="text-center mb-2">
               <p className="text-sm text-muted-foreground">
                 Dont have an account?
                 <Link
                   href="/register"
-                  className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline"
+                  className="text-[#1D3557] hover:text-[#1D3557]/80 font-medium underline-offset-4 hover:underline"
                 >
+                  {" "}
                   Register here
                 </Link>
               </p>
             </div>
-<Button
-  type="button"
-  variant="outline"
-  className="w-full flex gap-2"
-  onClick={() => signIn("google", { callbackUrl: "/simpleUser/dashboard" })}
->
-  <img src="/google.svg" alt="google" className="w-4 h-4" />
-  Continue with Google
-</Button>
-<Button
-  type="button"
-  variant="outline"
-  className="w-full flex gap-2"
-  onClick={() => signIn("github", { callbackUrl: "/simpleUser/dashboard" })}
->
-  <img src="/github.svg" className="w-4 h-4" />
-  Continue with GitHub
-</Button>
-
+            <div className="w-full flex flex-col sm:flex-row gap-2 sm:justify-center items-center">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:w-1/2 flex gap-2 text-[#1D3557]"
+                onClick={() =>
+                  signIn("google", { callbackUrl: "/simpleUser/dashboard" })
+                }
+              >
+                <img src="/googleIcon.png" alt="google" className="w-4 h-4" />
+                Continue with Google
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:w-1/2 flex gap-2 text-[#1D3557]"
+                onClick={() =>
+                  signIn("github", { callbackUrl: "/simpleUser/dashboard" })
+                }
+              >
+                <img src="/githubIcon.png" className="w-4 h-4" />
+                Continue with GitHub
+              </Button>
+            </div>
 
             <div className="text-center">
               <p className="text-sm text-muted-foreground">
                 Forgot your password?
                 <Link
                   href="/forgotPassword"
-                  className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline"
+                  className="hover:text-primary/80 font-medium underline-offset-4 hover:underline text-[#1D3557]"
                 >
                   {" "}
                   Click here
