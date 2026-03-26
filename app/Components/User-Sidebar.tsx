@@ -62,7 +62,7 @@ const Navbar = ({ onMenuClick }: { onMenuClick?: () => void }) => {
     onSuccess: async (res) => {
       if (res.success) {
         toast.success(res.message);
-        router.push("/login");
+        router.replace("/login");
       }
     },
   });

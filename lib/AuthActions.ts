@@ -2,12 +2,12 @@
 
 import { RegisterForm } from "@/app/(auth)/register/page";
 
-const baseUrl = process.env.NEXTAUTH_URL!;
+// const baseUrl = process.env.NEXTAUTH_URL;
 
 export const handleForgotPassword = async (formdata: { email: string }) => {
   try {
     const { email } = formdata;
-    const res = await fetch(`${baseUrl}/api/auth/ForgotPassword`, {
+    const res = await fetch(`/api/auth/ForgotPassword`, {
       method: "POST",
       headers: {
         "Content-type": "application/json",
@@ -31,8 +31,7 @@ export const handleLoginSubmit = async (formdata: {
 }) => {
   try {
     const { email, password } = formdata;
-
-    const res = await fetch(`${baseUrl}/api/auth/login`, {
+    const res = await fetch(`/api/auth/login`, {
       method: "POST",
       headers: {
         "Content-type": "application/json",
@@ -56,7 +55,7 @@ export const handleLoginSubmit = async (formdata: {
 
 export const handleLogout = async () => {
   try {
-    const res = await fetch(`${baseUrl}/api/auth/logout`, {
+    const res = await fetch(`/api/auth/logout`, {
       method: "GET",
       headers: {
         "Content-type": "application/json",
@@ -85,7 +84,7 @@ export const registerUser = async (formData: RegisterForm) => {
       phoneNumber,
     } = formData;
 
-    const res = await fetch(`${baseUrl}/api/auth/register`, {
+    const res = await fetch(`/api/auth/register`, {
       method: "POST",
       headers: {
         "Content-type": "application/json",
@@ -116,7 +115,7 @@ export const handleresetPassword = async (formdata: {
   try {
     const { token, password } = formdata;
 
-    const res = await fetch(`${baseUrl}/api/auth/ResetPassword`, {
+    const res = await fetch(`/api/auth/ResetPassword`, {
       method: "POST",
       headers: {
         "Content-type": "application/json",
@@ -139,7 +138,7 @@ export const handleresetPassword = async (formdata: {
 };
 export const UserProfile = async () => {
   try {
-    const res = await fetch(`${baseUrl}/api/auth/UserProfileData`, {
+    const res = await fetch(`/api/auth/UserProfileData`, {
       method: "GET",
       headers: {
         "Content-type": "application/json",
