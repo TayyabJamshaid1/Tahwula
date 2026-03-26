@@ -6,9 +6,11 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
+    "pages:build": "npx @cloudflare/next-on-pages",
     "lint": "eslint"
   },
   "dependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
     "@hookform/resolvers": "^5.2.2",
     "@reduxjs/toolkit": "^2.11.2",
     "@tanstack/react-query": "^5.90.20",
