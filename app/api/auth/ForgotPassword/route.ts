@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     await user.save();
 console.log(user,'user');
 
-    const resetLink = `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password?token=${token}`;
+    const resetLink = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
 
     await sendResetEmail(email, resetLink);
 console.log(resetLink,'resetLink');

@@ -2,7 +2,7 @@
 
 import { RegisterForm } from "@/app/(auth)/register/page";
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL!;
+const baseUrl = process.env.NEXTAUTH_URL!;
 
 export const handleForgotPassword = async (formdata: { email: string }) => {
   try {
