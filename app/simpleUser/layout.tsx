@@ -1,8 +1,8 @@
-"use client"; // CLIENT COMPONENT wrapper for client-side redirect
+"use client";
 
 import { useAppSelector } from "@/app/lib/hooks";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import UserSidebar from "../Components/User-Sidebar";
 
 export default function ApplicantLayout({
@@ -12,18 +12,26 @@ export default function ApplicantLayout({
 }) {
   const router = useRouter();
   const currentUser = useAppSelector((s) => s.auth.user);
+  const authLoading = useAppSelector((s) => s.auth.authLoading);
 
-  // Client-side redirect after logout
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    if (!currentUser) {
-      router.replace("/login");
-    } else if (currentUser.role !== "simpleUser") {
-      router.replace("/");
-    }
-  }, [currentUser, router]);
+    setMounted(true);
+  }, []);
 
-  // Prevent rendering while redirecting
-  if (!currentUser || currentUser.role !== "simpleUser") return null;
+  useEffect(() => {
+    if (!authLoading && mounted) {
+      if (!currentUser) {
+        router.replace("/login");
+      } else if (currentUser.role !== "simpleUser") {
+        router.replace("/");
+      }
+    }
+  }, [currentUser, authLoading, mounted, router]);
+
+  // Prevent flicker on logout / mount
+  if (!mounted || !currentUser) return null;
 
   return (
     <div className="min-h-screen bg-background">
