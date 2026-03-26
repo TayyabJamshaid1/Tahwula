@@ -49,7 +49,7 @@ const ForgotComponent: React.FC = () => {
   };
   return (
     <div
-      className="min-h-screen bg-[#1D3557] flex items-center justify-center p-4 bg-cover bg-center"
+      className="min-h-screen w-full flex items-center justify-center px-4 sm:px-0  bg-[#1D3557] bg-cover bg-center"
       style={{ backgroundImage: "url('/IconBackgroundAuth.png')" }}
     >
       {authLoader && (

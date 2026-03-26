@@ -52,10 +52,10 @@ const ResetComponent: React.FC = () => {
   };
 
   return (
-    <div
-      className="min-h-screen bg-[#1D3557] flex items-center justify-center p-4 bg-cover bg-center"
-      style={{ backgroundImage: "url('/IconBackgroundAuth.png')" }}
-    >
+   <div
+  className="min-h-screen w-full flex items-center justify-center bg-[#1D3557] px-4 sm:px-0 bg-cover bg-center"
+  style={{ backgroundImage: "url('/IconBackgroundAuth.png')" }}
+>
       {authLoader && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4">
