@@ -20,7 +20,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { logoutThunk } from "../lib/AuthSlice";
+import { logoutThunk, user } from "../lib/AuthSlice";
 import { useAppDispatch, useAppSelector } from "../lib/hooks";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -56,7 +56,7 @@ const navigationItems = [
 const Navbar = ({ onMenuClick }: { onMenuClick?: () => void }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-
+  const userInfo: user | null = useAppSelector((s) => s.auth.user);
   const { mutate: LogoutUser, isPending } = useMutation({
     mutationFn: () => dispatch(logoutThunk()).unwrap(),
     onSuccess: async (res) => {
@@ -69,10 +69,15 @@ const Navbar = ({ onMenuClick }: { onMenuClick?: () => void }) => {
 
   // Mock user data - replace with actual user data from your auth system
   const user = {
-    name: "John Doe",
-    email: "john@example.com",
+    name: userInfo?.name,
+    email: userInfo?.email,
     avatar: "https://github.com/shadcn.png",
-    initials: "JD",
+    initials: userInfo?.name
+      ? userInfo.name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+      : "SU",
   };
 
   return (
@@ -401,7 +406,7 @@ const UserSidebar = ({ children }: UserSidebarProps) => {
             <div className="h-17 w-17 rounded-full border-6 border-[#1D3557] border-t-transparent animate-spin"></div>
           </div>
         </div>
-       )}
+      )}
     </>
   );
 };
