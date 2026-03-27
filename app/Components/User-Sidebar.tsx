@@ -290,7 +290,7 @@ const MobileSidebar = ({
     onSuccess: async (res) => {
       if (res.success) {
         toast.success(res.message);
-        router.push("/login");
+        router.replace("/login");
       }
     },
   });
