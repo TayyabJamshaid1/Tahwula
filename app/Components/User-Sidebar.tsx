@@ -169,10 +169,10 @@ const Navbar = ({ onMenuClick }: { onMenuClick?: () => void }) => {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href={base + "/profile"}>Profile</Link>
+              <Link href={base + "/dashboard"}>Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={base + "/setting"}>Settings</Link>
+              <Link href={base + "/dashboard"}>Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
