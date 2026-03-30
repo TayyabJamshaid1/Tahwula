@@ -37,7 +37,22 @@ const LoginComponent: React.FC = () => {
     resolver: zodResolver(loginUserSchema),
   });
   const router = useRouter();
-
+ const handleSuccessfulAuth = () => {
+  // 1. Clear all history
+  window.history.go(-window.history.length);
+  
+  // 2. Replace with dashboard
+  const dashboardPath = 
+     '/simpleUser/dashboard' 
+  
+  // 3. Use location.replace to completely replace history
+  window.location.replace(dashboardPath);
+  
+  // 4. Prevent bfcache on current page
+  if (window.performance?.navigation?.type === 2) {
+    window.location.reload();
+  }
+};
   const handleFormSubmit = async (data: any) => {
     const res = await dispatch(loginThunk(data)).unwrap();
     console.log(res, "ressss in login");
@@ -47,6 +62,7 @@ const LoginComponent: React.FC = () => {
       console.log(res, "res");
 
       if (res?.user?.role == "simpleUser") {
+        await handleSuccessfulAuth()
         router.replace("/simpleUser/dashboard");
       }
     } else {

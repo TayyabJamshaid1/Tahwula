@@ -44,7 +44,35 @@ const RegisterComponet: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
-
+ const handleSuccessfulAuth = () => {
+  // 1. Clear all history
+  // window.history.go(-window.history.length);
+  
+  // // 2. Replace with dashboard
+  const dashboardPath = 
+     '/simpleUser/dashboard' 
+  
+  // // 3. Use location.replace to completely replace history
+  // window.location.replace(dashboardPath);
+  
+  // // 4. Prevent bfcache on current page
+  // if (window.performance?.navigation?.type === 2) {
+  //   window.location.reload();
+  // }
+    window.location.replace(dashboardPath);
+  
+  // OR Method 2: More aggressive history clearing (if above doesn't work)
+  // Clear history stack and replace
+  if (window.history.length > 1) {
+    // Replace current state with dashboard
+    window.history.replaceState(null, '', dashboardPath);
+    // Push a dummy state to break back navigation
+    window.history.pushState(null, '', dashboardPath);
+    // Replace again to clean up
+    window.history.replaceState(null, '', dashboardPath);
+  }
+  window.location.href = dashboardPath;
+};
   const onSubmit = async (data: RegisterForm) => {
     const res = await dispatch(registerThunk(data)).unwrap();
     if (res?.success) {
@@ -52,6 +80,7 @@ const RegisterComponet: React.FC = () => {
       console.log(res, "res");
 
       if (res?.user?.role == "simpleUser") {
+        await handleSuccessfulAuth()
         router.replace("/simpleUser/dashboard");
       }
     } else {
