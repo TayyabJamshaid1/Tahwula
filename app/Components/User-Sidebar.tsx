@@ -62,7 +62,18 @@ const Navbar = ({ onMenuClick }: { onMenuClick?: () => void }) => {
     onSuccess: async (res) => {
       if (res.success) {
         toast.success(res.message);
-        router.replace("/login");
+
+        // Clear any pending state or subscriptions
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        // Try soft navigation first
+        try {
+          await router.replace("/login");
+        } catch (error) {
+          // Fallback to hard navigation if soft navigation fails
+          console.warn("Soft navigation failed, using hard navigation", error);
+          window.location.href = "/login";
+        }
       }
     },
   });
@@ -285,12 +296,23 @@ const MobileSidebar = ({
     return pathname.startsWith(href + "/");
   }
 
-  const { mutate: LogoutUser } = useMutation({
+  const { mutate: LogoutUser, isPending } = useMutation({
     mutationFn: () => dispatch(logoutThunk()).unwrap(),
     onSuccess: async (res) => {
       if (res.success) {
         toast.success(res.message);
-        router.replace("/login");
+
+        // Clear any pending state or subscriptions
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        // Try soft navigation first
+        try {
+          await router.replace("/login");
+        } catch (error) {
+          // Fallback to hard navigation if soft navigation fails
+          console.warn("Soft navigation failed, using hard navigation", error);
+          window.location.href = "/login";
+        }
       }
     },
   });
