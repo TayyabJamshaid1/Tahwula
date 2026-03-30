@@ -32,75 +32,111 @@ const createUserSession = async ({
       .createHash("sha-256")
       .update(token)
       .digest("hex");
+
     await ConnectToDatabase();
 
-    let data = await Session.create({
+    await Session.create({
       userId,
       userAgent,
       ip,
-      expiresAt: new Date(Date.now() + SESSION_LIFETIME * 1000),
       sessionToken,
+      expiresAt: new Date(Date.now() + SESSION_LIFETIME * 1000),
     });
-  } catch (err) {
-    console.log(err, "err in create user sessuib");
+
+    return true;
+  } catch (error: any) {
+    console.error("❌ createUserSession error:", error?.message);
+
+    // ❗ Do NOT throw → avoid crashing login flow
+    return false;
   }
 };
 
 export const createSessionAndSetCookies = async (userId: number) => {
-  const token = generateToken();
+  try {
+    const token = crypto.randomBytes(32).toString("hex");
 
-  const ip = await getIPAddress();
+    const ip = await getIPAddress();
+    const headersList = await headers();
 
-  const headersList = await headers();
+    const isSessionCreated = await createUserSession({
+      token,
+      userId,
+      ip,
+      userAgent: headersList.get("user-agent") || "",
+    });
 
-  await createUserSession({
-    token,
-    userId,
-    ip,
-    userAgent: headersList.get("user-agent") || "",
-  });
-  const cookiesStore = await cookies();
-  cookiesStore.set("session", token, {
-    secure: true, //it ensures that cookie is only sent over https
-    maxAge: SESSION_LIFETIME,
-    httpOnly: true, //Prevents client side javascript access (like you cannot access cookies by using js methods like cookies.get etc)
-  });
+    // ❗ If DB failed → don't set cookie
+    if (!isSessionCreated) {
+      console.error("Session not created, skipping cookie set");
+      return;
+    }
+
+    const cookieStore = await cookies();
+
+    cookieStore.set("session", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: SESSION_LIFETIME,
+      sameSite: "lax",
+      path: "/",
+    });
+  } catch (error: any) {
+    console.error("❌ createSessionAndSetCookies error:", error?.message);
+  }
 };
-
 export const validateSessionAndGetUser = async (session: string) => {
-  const sessionToken = crypto
-    .createHash("sha-256")
-    .update(session)
-    .digest("hex");
-  await ConnectToDatabase();
-  const sessionStoredUser = await Session.findOne({ sessionToken }).populate(
-    "userId",
-    "-password"
-  );
-  console.log(sessionStoredUser, " sessionStored");
+  try {
+    // 🔐 Hash incoming session token
+    const sessionToken = crypto
+      .createHash("sha-256")
+      .update(session)
+      .digest("hex");
 
-  if (!sessionStoredUser) return null;
-  //if user using website after 30 days,then we will make him logout and session will be deleted
-  if (Date.now() >= sessionStoredUser?.expiresAt.getTime()) {
-    await invalidateSession(sessionStoredUser?._id.toString());
+    await ConnectToDatabase();
+
+    const sessionStoredUser = await Session.findOne({ sessionToken }).populate(
+      "userId",
+      "-password"
+    );
+
+    if (!sessionStoredUser) return null;
+
+    const now = Date.now();
+    const expiresAt = sessionStoredUser.expiresAt.getTime();
+
+    // ⛔ Session expired
+    if (now >= expiresAt) {
+      await invalidateSession(sessionStoredUser._id.toString());
+      return null;
+    }
+
+    // 🔄 Sliding expiration (refresh session)
+    if (now >= expiresAt - SESSION_REFRESH_TIME * 1000) {
+      await Session.findOneAndUpdate(
+        { sessionToken },
+        {
+          expiresAt: new Date(
+            Date.now() + SESSION_LIFETIME * 1000
+          ),
+        }
+      );
+    }
+
+    return sessionStoredUser;
+  } catch (error: any) {
+    console.error("❌ validateSessionAndGetUser error:", error?.message);
+
+    // ✅ CRITICAL: Prevent crash if DB/network fails
     return null;
   }
-  //if user access the website before 30 days complete,after 15 days of logged in,now his 15 days are left,then we will give him more 30 days relaxation ,now he will be still logged in  for 45 days(30+15=45).
-  if (
-    Date.now() >=
-    sessionStoredUser?.expiresAt.getTime() - SESSION_REFRESH_TIME * 1000
-  ) {
-    await Session.findOneAndUpdate(
-      { sessionToken },
-      { expiresAt: new Date(Date.now() + SESSION_LIFETIME * 1000) }
-    );
-  }
-  return sessionStoredUser;
 };
 
-
 export const invalidateSession = async (sessionId: string) => {
-  await ConnectToDatabase();
-
-  await Session.findByIdAndDelete(sessionId);
+  try {
+    await ConnectToDatabase();
+    await Session.findByIdAndDelete(sessionId);
+  } catch (error) {
+    console.error("❌ invalidateSession error:", error);
+  }
 };
