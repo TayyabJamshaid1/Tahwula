@@ -8,24 +8,22 @@ export async function GET(): Promise<Response> {
   try {
     await ConnectToDatabase();
 
-    const cookieStore = await cookies(); // ✅ REQUIRED in Next 16
+    const cookieStore = await cookies();
     const session = cookieStore.get("session")?.value;
 
     if (!session) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     const user = await validateSessionAndGetUser(session);
     let profileData = null;
 
-      profileData = await User.findOne({
-        userId: user.userId._id.toString(),
-      });
-  
-console.log(profileData,"sssssssssssssss",user,user.userId._id.toString());
+    profileData = await User.findOne({
+      userId: user.userId._id.toString(),
+    });
 
     return NextResponse.json({
       success: true,
@@ -38,7 +36,7 @@ console.log(profileData,"sssssssssssssss",user,user.userId._id.toString());
 
     return NextResponse.json(
       { success: false, message: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
