@@ -94,7 +94,7 @@ export default function PerformanceSection() {
     {/* Gauge */}
     <div className="flex-1 flex items-center justify-center px-4">
 
-      <div className="relative w-full max-w-[420px] aspect-[13/6]">
+      <div className="relative w-full max-w-105 aspect-13/6">
 
         <svg
           viewBox="-10 32 280 110"

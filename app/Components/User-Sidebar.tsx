@@ -42,6 +42,9 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
 const base = "/simpleUser";
+interface UserSidebarProps {
+  children: React.ReactNode;
+}
 
 const navigationItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: base + "/dashboard" },
@@ -94,7 +97,6 @@ const Navbar = ({ onMenuClick }: { onMenuClick?: () => void }) => {
   return (
     <header className="sticky top-0 z-30  flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       {/* z-30 removed  up*/}
-
       {/* Mobile menu button */}
       <Button
         variant="ghost"
@@ -363,7 +365,7 @@ const MobileSidebar = ({
                     "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                     isActive
                       ? "bg-[#98AEC01A] text-white" // Active: background #98AEC01A, text white
-                      : "text-[#7B9FC3] hover:text-white hover:bg-[#98AEC01A]", // Inactive: text #7B9FC3, hover effects
+                      : "text-[#7B9FC3] hover:text-white hover:bg-[#98AEC01A]", 
                   )}
                 >
                   <Icon
@@ -399,10 +401,6 @@ const MobileSidebar = ({
 };
 
 // Main UserSidebar component
-interface UserSidebarProps {
-  children: React.ReactNode;
-}
-
 const UserSidebar = ({ children }: UserSidebarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const authLoader: boolean = useAppSelector((s) => s.auth.authLoading);
