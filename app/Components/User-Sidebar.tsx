@@ -49,6 +49,7 @@ interface UserSidebarProps {
 const navigationItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: base + "/dashboard" },
   { name: "Perspectives", icon: User, href: base + "/perspective" },
+  { name: "Chats", icon: User, href: base + "/chats" },
   { name: "Tasks", icon: Plus },
   { name: "Documents", icon: Briefcase },
   { name: "Reports", icon: Bookmark },
