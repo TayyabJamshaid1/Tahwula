@@ -151,7 +151,6 @@ const ChatPageDesign = () => {
   const [onlineUsers, setOnlineUsers] = useState<string[]>(["user1", "user2"]);
 
   // Mock functions (empty implementations for structure)
-  const handleLogout = () => {};
   const createChat = (user: User) => {};
   const createGroupChat = (groupName: string, selectedUsers: string[]) => {};
   const handleMessageSend = async (e: any, imageFile?: File | null) => {};
@@ -176,7 +175,6 @@ const ChatPageDesign = () => {
         users={mockUsers}
         loggedInUser={mockLoggedInUser}
         onlineUsers={onlineUsers}
-        handleLogout={handleLogout}
         createChat={createChat}
         createGroupChat={createGroupChat}
       />

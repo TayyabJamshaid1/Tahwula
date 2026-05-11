@@ -21,7 +21,6 @@ interface ChatSidebarProps {
   users: User[] | null;
   loggedInUser: User | null;
   onlineUsers: string[];
-  handleLogout: () => void;
   createChat: (user: User) => void;
   createGroupChat: (groupName: string, selectedUsers: string[]) => void;
 }
@@ -43,7 +42,6 @@ const ChatSidebar = ({
   users,
   loggedInUser,
   onlineUsers,
-  handleLogout,
   createChat,
   createGroupChat,
 }: ChatSidebarProps) => {
@@ -339,17 +337,7 @@ const ChatSidebar = ({
           </div>
           <span className="font-medium text-gray-300">Profile</span>
         </button>
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-600 transition-colors text-red-500 hover:text-white"
-        >
-          <div className="p-1.5 bg-red-600 rounded-lg">
-            <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </div>
-          <span className="font-medium">Logout</span>
-        </button>
+      
       </div>
     </aside>
   );
