@@ -8,6 +8,7 @@ import {
 
 import { ConnectToDatabase } from "@/lib/db";
 import {
+  fetchUsers,
   forgotPasswordService,
   loginService,
   logoutService,
@@ -219,6 +220,29 @@ export const userProfileController = async () => {
       {
         success: false,
         message: error.message || "Internal Server Error",
+      },
+      { status: 500 },
+    );
+  }
+};
+export const fetchAllChatUsers = async () => {
+  try {
+    await ConnectToDatabase();
+
+    let users = await fetchUsers();
+    return NextResponse.json(
+      {
+        success: true,
+        users,
+        message: "All users fetched successfully",
+      },
+      { status: 200 },
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message || "Fetch all users Failed",
       },
       { status: 500 },
     );

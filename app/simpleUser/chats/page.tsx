@@ -5,8 +5,10 @@ import React, { useState } from "react";
 import ChatHeader from "./components/ChatHeader";
 import ChatMessages from "./components/ChatMessages";
 import MessageInput from "./components/MessageInput";
-import { User } from "@/app/store/AuthSlice";
+import { fetchAllUsersThunk, User } from "@/app/store/AuthSlice";
 import ChatSidebar from "./components/ChatSidebar";
+import { useQuery } from "@tanstack/react-query";
+import { useAppDispatch } from "@/app/store/hooks";
 
 // Type definitions (kept for structure)
 export interface Message {
@@ -47,89 +49,105 @@ export interface Chat {
   };
   user: User;
 }
-  // Mock users data
-  const mockUsers: User[] = [
-    { _id: "user1", name: "John Doe", email: "john@example.com" },
-    { _id: "user2", name: "Sarah Johnson", email: "sarah@example.com" },
-    { _id: "user3", name: "Mike Wilson", email: "mike@example.com" },
-    { _id: "user4", name: "Emily Brown", email: "emily@example.com" },
-    { _id: "user5", name: "Alex Turner", email: "alex@example.com" },
-  ];
+// Mock users data
+const mockUsers: User[] = [
+  { _id: "user1", name: "John Doe", email: "john@example.com" },
+  { _id: "user2", name: "Sarah Johnson", email: "sarah@example.com" },
+  { _id: "user3", name: "Mike Wilson", email: "mike@example.com" },
+  { _id: "user4", name: "Emily Brown", email: "emily@example.com" },
+  { _id: "user5", name: "Alex Turner", email: "alex@example.com" },
+];
 
-  const mockLoggedInUser: User = { _id: "currentUser", name: "Current User", email: "me@example.com" };
+const mockLoggedInUser: User = {
+  _id: "currentUser",
+  name: "Current User",
+  email: "me@example.com",
+};
 
-  const mockChats: Chat[] = [
-    {
-      chat: {
-        _id: "chat1",
-        isGroupChat: false,
-        unseenCount: 3,
-        latestMessage: { text: "Hey! How are you?", sender: "user1" },
-        updatedAt: new Date().toString(),
-      },
-      user: { _id: "user1", name: "John Doe" },
+const mockChats: Chat[] = [
+  {
+    chat: {
+      _id: "chat1",
+      isGroupChat: false,
+      unseenCount: 3,
+      latestMessage: { text: "Hey! How are you?", sender: "user1" },
+      updatedAt: new Date().toString(),
     },
-    {
-      chat: {
-        _id: "chat2",
-        isGroupChat: false,
-        unseenCount: 0,
-        latestMessage: { text: "See you tomorrow!", sender: "currentUser" },
-        updatedAt: new Date().toString(),
-      },
-      user: { _id: "user2", name: "Sarah Johnson" },
+    user: { _id: "user1", name: "John Doe" },
+  },
+  {
+    chat: {
+      _id: "chat2",
+      isGroupChat: false,
+      unseenCount: 0,
+      latestMessage: { text: "See you tomorrow!", sender: "currentUser" },
+      updatedAt: new Date().toString(),
     },
-    {
-      chat: {
-        _id: "chat3",
-        isGroupChat: true,
-        groupName: "Dev Team",
-        unseenCount: 5,
-        latestMessage: { text: "Meeting at 3 PM", sender: "user3" },
-        updatedAt: new Date().toString(),
-      },
-      user: { _id: "user3", name: "Mike Wilson" },
+    user: { _id: "user2", name: "Sarah Johnson" },
+  },
+  {
+    chat: {
+      _id: "chat3",
+      isGroupChat: true,
+      groupName: "Dev Team",
+      unseenCount: 5,
+      latestMessage: { text: "Meeting at 3 PM", sender: "user3" },
+      updatedAt: new Date().toString(),
     },
-  ];
+    user: { _id: "user3", name: "Mike Wilson" },
+  },
+];
 
-  const mockMessages: Message[] = [
-    {
-      _id: "msg1",
-      chatId: "chat2",
-      sender: "user2",
-      text: "Hey! How are you doing today?",
-      messageType: "text",
-      seen: true,
-      seenAt: new Date().toString(),
-      createdAt: new Date().toString(),
+const mockMessages: Message[] = [
+  {
+    _id: "msg1",
+    chatId: "chat2",
+    sender: "user2",
+    text: "Hey! How are you doing today?",
+    messageType: "text",
+    seen: true,
+    seenAt: new Date().toString(),
+    createdAt: new Date().toString(),
+  },
+  {
+    _id: "msg2",
+    chatId: "chat2",
+    sender: "currentUser",
+    text: "I'm doing great! Thanks for asking 😊",
+    messageType: "text",
+    seen: true,
+    seenAt: new Date().toString(),
+    createdAt: new Date().toString(),
+  },
+  {
+    _id: "msg3",
+    chatId: "chat2",
+    sender: "user2",
+    text: "Check out this photo!",
+    messageType: "image",
+    image: {
+      url: "https://via.placeholder.com/200",
+      publicId: "img1",
     },
-    {
-      _id: "msg2",
-      chatId: "chat2",
-      sender: "currentUser",
-      text: "I'm doing great! Thanks for asking 😊",
-      messageType: "text",
-      seen: true,
-      seenAt: new Date().toString(),
-      createdAt: new Date().toString(),
-    },
-    {
-      _id: "msg3",
-      chatId: "chat2",
-      sender: "user2",
-      text: "Check out this photo!",
-      messageType: "image",
-      image: {
-        url: "https://via.placeholder.com/200",
-        publicId: "img1",
-      },
-      seen: false,
-      createdAt: new Date().toString(),
-    },
-  ];
-    const mockUser: User = { _id: "user2", name: "Sarah Johnson", email: "sarah@example.com" };
+    seen: false,
+    createdAt: new Date().toString(),
+  },
+];
+const mockUser: User = {
+  _id: "user2",
+  name: "Sarah Johnson",
+  email: "sarah@example.com",
+};
 
 const ChatPageDesign = () => {
+  const dispatch = useAppDispatch();
+  const { data: users, isLoading } = useQuery({
+    queryKey: ["allChatUsers"],
+    queryFn: async () => {
+      return await dispatch(fetchAllUsersThunk()).unwrap();
+    },
+  });
+
   // All state declarations preserved from original
   const [isGroupChat, setIsGroupChat] = useState(false);
   const [groupName, setGroupName] = useState("");
@@ -139,7 +157,8 @@ const ChatPageDesign = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [messages, setMessages] = useState<Message[] | null>(mockMessages);
   const [user, setUser] = useState<User | null>(mockUser);
-  const [currentChatDetails, setCurrentChatDetails] = useState<GroupDetails | null>(null);
+  const [currentChatDetails, setCurrentChatDetails] =
+    useState<GroupDetails | null>(null);
   const [showAllUser, setShowAllUser] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState<string[]>(["user1", "user2"]);
@@ -166,13 +185,13 @@ const ChatPageDesign = () => {
         chats={mockChats}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
-        users={mockUsers}
+        users={users?.users}
         loggedInUser={mockLoggedInUser}
         onlineUsers={onlineUsers}
         createChat={createChat}
         createGroupChat={createGroupChat}
       />
-      
+
       <div className="flex-1 flex flex-col justify-between p-4 backdrop-blur-xl bg-white/5 border-1 border-white/10">
         <ChatHeader
           user={user}
@@ -185,7 +204,7 @@ const ChatPageDesign = () => {
           chatId={selectedUser}
           loggedInUser={mockLoggedInUser}
         />
-        
+
         <ChatMessages
           selectedUser={selectedUser}
           loggedInUser={mockLoggedInUser}
@@ -193,7 +212,7 @@ const ChatPageDesign = () => {
           isGroupChat={currentChatDetails?.isGroupChat || false}
           groupMembers={currentChatDetails?.users || []}
         />
-        
+
         <MessageInput
           selectedUser={selectedUser}
           message={message}

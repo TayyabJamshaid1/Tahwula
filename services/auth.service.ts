@@ -182,3 +182,8 @@ export const userProfileService = async (
     profileData,
   };
 };
+
+export const fetchUsers=async()=>{
+    const users=await User.find({}).select("-password");
+    return users;
+}

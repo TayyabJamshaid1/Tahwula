@@ -156,3 +156,23 @@ export const UserProfile = async () => {
     return { success: false, message: "User Logout Failed" };
   }
 };
+export const FetchAllUsers = async () => {
+  try {
+    const res = await fetch(`/api/auth/fetch-all-users`, {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+
+    const data = await res.json();
+
+    if (!data?.success) {
+      return { success: false, message: data?.message };
+    }
+
+    return { success: true, message: data?.message,users:data?.users};
+  } catch (err) {
+    return { success: false, message: "User Logout Failed" };
+  }
+};

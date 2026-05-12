@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
+  FetchAllUsers,
   handleForgotPassword,
   handleLoginSubmit,
   handleLogout,
@@ -19,6 +20,7 @@ export type User = {
 type AuthState = {
   authLoading: boolean;
   user: User | null;
+  users: User[] | [];
   status: "idle" | "loading" | "authenticated" | "unauthenticated";
   error: string | null;
 };
@@ -26,6 +28,7 @@ type AuthState = {
 const initialState: AuthState = {
   authLoading: false,
   user: null,
+  users: [],
   status: "idle",
   error: null,
 };
@@ -93,7 +96,16 @@ export const logoutThunk = createAsyncThunk(
     return res;
   },
 );
+/* ---------------- FETCH ALL USERS ---------------- */
+export const fetchAllUsersThunk = createAsyncThunk(
+  "auth/fetchAllUsers",
+  async (_, { rejectWithValue }) => {
+    const res = await FetchAllUsers();
+    console.log(res, "resss");
 
+    return res;
+  },
+);
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -180,6 +192,17 @@ const authSlice = createSlice({
       })
       .addCase(logoutThunk.rejected, (state, action) => {
         state.authLoading = false;
+        state.error = action.payload as string;
+      })
+      /* FETCH ALL USERS */
+      .addCase(fetchAllUsersThunk.fulfilled, (state, action) => {
+        state.authLoading = false;
+        state.status = "authenticated";
+        state.users = action.payload.users;
+      })
+      .addCase(fetchAllUsersThunk.rejected, (state, action) => {
+        state.authLoading = false;
+        state.status = "unauthenticated";
         state.error = action.payload as string;
       });
   },

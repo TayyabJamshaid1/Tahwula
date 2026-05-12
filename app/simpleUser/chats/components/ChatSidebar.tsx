@@ -2,7 +2,7 @@
 "use client";
 
 import { User } from "@/app/store/AuthSlice";
-import React from "react";
+import React, { useMemo } from "react";
 
 interface ChatSidebarProps {
   sidebarOpen: boolean;
@@ -46,7 +46,11 @@ const ChatSidebar = ({
   createGroupChat,
 }: ChatSidebarProps) => {
   const [searchQuery, setSearchQuery] = React.useState("");
-
+   const filteredUsers=useMemo(()=>{
+    if (!searchQuery) return users;
+    const lowercase=searchQuery.toLowerCase();
+    return users?.filter(u=>u.name?.toLowerCase().includes(lowercase) || u.email?.toLowerCase().includes(lowercase));
+   },[users,searchQuery])
   const handleUserSelectForGroup = (userId: string) => {
     if (selectedGroupUsers.includes(userId)) {
       setSelectedGroupUsers(selectedGroupUsers.filter(id => id !== userId));
@@ -71,6 +75,7 @@ const ChatSidebar = ({
       createChat(user);
     }
   };
+console.log(users);
 
   return (
     <aside
@@ -168,7 +173,7 @@ const ChatSidebar = ({
           </div>
 
           <div className="space-y-2 overflow-y-auto h-full pb-4 px-4">
-            {users
+            {filteredUsers
               ?.filter((u) => u._id !== loggedInUser?._id)
               .map((u) => (
                 <button
