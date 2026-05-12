@@ -6,6 +6,7 @@ import ChatSidebar from "@/components/ChatSidebar";
 import ChatHeader from "@/components/ChatHeader";
 import ChatMessages from "@/components/ChatMessages";
 import MessageInput from "@/components/MessageInput";
+import { User } from "@/app/lib/AuthSlice";
 
 // Type definitions (kept for structure)
 export interface Message {
@@ -21,13 +22,6 @@ export interface Message {
   seen: boolean;
   seenAt?: string;
   createdAt: string;
-}
-
-export interface User {
-  _id: string;
-  name: string;
-  email?: string;
-  avatar?: string;
 }
 
 export interface GroupDetails {

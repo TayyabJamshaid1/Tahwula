@@ -4,7 +4,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useRef } from "react";
 import { AppStore, makeStore } from "../lib/store";
 import { Provider } from "react-redux";
-import { user } from "../lib/AuthSlice";
+import { User } from "../lib/AuthSlice";
 import AuthHydrator from "./AuthHydrator";
 import { SessionProvider } from "next-auth/react";
 
@@ -20,7 +20,7 @@ export default function Providers({
   user,
 }: {
   children: React.ReactNode;
-  user: user | null;
+  user: User | null;
 }) {
   const storeRef = useRef<AppStore>(undefined);
   if (!storeRef.current) {

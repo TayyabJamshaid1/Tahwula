@@ -8,16 +8,17 @@ import {
 } from "@/lib/AuthActions";
 import { RegisterForm } from "@/app/(auth)/register/page";
 
-export type user = {
-  id?: string;
+export type User = {
+  _id: string;
   email?: string;
   name?: string;
+  avatar?: string;
   role?: "simpleUser" | "admin";
 };
 
 type AuthState = {
   authLoading: boolean;
-  user: user | null;
+  user: User | null;
   status: "idle" | "loading" | "authenticated" | "unauthenticated";
   error: string | null;
 };

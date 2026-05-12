@@ -2,9 +2,9 @@
 
 import { useEffect } from "react";
 import { useAppDispatch } from "../lib/hooks";
-import { setAuthFromServer, user } from "../lib/AuthSlice";
+import { setAuthFromServer, User } from "../lib/AuthSlice";
 
-export default function AuthHydrator({ user }: {user:user|null}) {
+export default function AuthHydrator({ user }: {user:User|null}) {
   const dispatch = useAppDispatch();
 console.log(user);
 

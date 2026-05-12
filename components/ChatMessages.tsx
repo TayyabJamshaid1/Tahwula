@@ -3,7 +3,8 @@
 
 import React, { useEffect, useRef } from "react";
 import moment from "moment";
-import { User, Message} from "@/app/simpleUser/chats/page";
+import {  Message} from "@/app/simpleUser/chats/page";
+import { User } from "@/app/lib/AuthSlice";
 
 interface ChatMessagesProps {
   selectedUser: string | null;
