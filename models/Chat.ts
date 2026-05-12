@@ -1,5 +1,5 @@
 // models/Chat.ts
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document,models,model } from "mongoose";
 
 export interface IChat extends Document {
     isGroupChat: boolean;
@@ -46,4 +46,7 @@ const schema: Schema<IChat> = new Schema(
     }
 );
 
-export const Chat = mongoose.model<IChat>("Chat", schema);
+
+const Chat = models?.Chat || model<IChat>("Chat", schema);
+
+export default Chat;

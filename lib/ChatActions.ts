@@ -1,0 +1,47 @@
+export const FetchAllChats = async () => {
+  try {
+    const res = await fetch(`/api/chat/fetch-all-chats`, {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+
+    const data = await res.json();
+
+    if (!data?.success) {
+      return { success: false, message: data?.message };
+    }
+
+    return { success: true, message: data?.message, users: data?.allChats };
+  } catch (err) {
+    console.log(err);
+    
+    return { success: false, message: "Fetch all chats Failed" };
+  }
+};
+
+export const createNewChat = async (otherUserId: string) => {
+  try {
+    const res = await fetch(`/api/chat/new`, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        otherUserId,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!data?.success) {
+      return { success: false, message: data?.message };
+    }
+    return { success: true, message: data?.message, chatId: data?.chatId };
+  } catch (err) {
+    console.log(err, "err in create new chat");
+
+    return { success: false, message: "Create new chat Failed" };
+  }
+};

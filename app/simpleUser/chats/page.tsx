@@ -7,8 +7,10 @@ import ChatMessages from "./components/ChatMessages";
 import MessageInput from "./components/MessageInput";
 import { fetchAllUsersThunk, User } from "@/app/store/AuthSlice";
 import ChatSidebar from "./components/ChatSidebar";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAppDispatch } from "@/app/store/hooks";
+import { createNewChatThunk, fetchAllChatsThunk } from "@/app/store/ChatSlice";
+import { queryClient } from "@/components/Providers";
 
 // Type definitions (kept for structure)
 export interface Message {
@@ -49,14 +51,6 @@ export interface Chat {
   };
   user: User;
 }
-// Mock users data
-const mockUsers: User[] = [
-  { _id: "user1", name: "John Doe", email: "john@example.com" },
-  { _id: "user2", name: "Sarah Johnson", email: "sarah@example.com" },
-  { _id: "user3", name: "Mike Wilson", email: "mike@example.com" },
-  { _id: "user4", name: "Emily Brown", email: "emily@example.com" },
-  { _id: "user5", name: "Alex Turner", email: "alex@example.com" },
-];
 
 const mockLoggedInUser: User = {
   _id: "currentUser",
@@ -147,6 +141,24 @@ const ChatPageDesign = () => {
       return await dispatch(fetchAllUsersThunk()).unwrap();
     },
   });
+  const { mutate, isPending, variables, isError } = useMutation({
+    mutationFn: async (otherUserId: string) => {
+      return await dispatch(createNewChatThunk(otherUserId)).unwrap();
+    },
+    onSuccess: async (data) => {
+      console.log(data, "inOnsuccess");
+      setSelectedUser(data.chatId);
+      setShowAllUser(false);
+      await queryClient.invalidateQueries({ queryKey: ["fetchAllChats"] });
+    },
+  });
+  const { data: allChats, isLoading: isAllChatLoading } = useQuery({
+    queryKey: ["fetchAllChats"],
+    queryFn: async () => {
+      return await dispatch(fetchAllChatsThunk()).unwrap();
+    },
+  });
+  console.log(allChats);
 
   // All state declarations preserved from original
   const [isGroupChat, setIsGroupChat] = useState(false);
@@ -164,7 +176,10 @@ const ChatPageDesign = () => {
   const [onlineUsers, setOnlineUsers] = useState<string[]>(["user1", "user2"]);
 
   // Mock functions (empty implementations for structure)
-  const createChat = (user: User) => {};
+  const createChat = (user: User) => {
+    console.log(user);
+    mutate(user._id);
+  };
   const createGroupChat = (groupName: string, selectedUsers: string[]) => {};
   const handleMessageSend = async (e: any, imageFile?: File | null) => {};
   const handleTyping = (value: string) => {};

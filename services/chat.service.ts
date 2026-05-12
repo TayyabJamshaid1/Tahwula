@@ -1,6 +1,7 @@
-import { Chat } from "@/models/Chat";
-import {Messages} from "@/models/Messages";
+import  Chat  from "@/models/Chat";
+import Message from "@/models/Messages";
 import User from "@/models/User";
+import { log } from "console";
 
 export const createNewChatService = async (
   userId: string,
@@ -33,6 +34,7 @@ export const createNewChatService = async (
 export const fetchAllChatsService = async (
   userId: string
 ) => {
+  console.log("Fetching all chats for user:", userId);
   const allChats = await Chat.find({
     users: {
       $in: [userId],
@@ -46,7 +48,7 @@ export const fetchAllChatsService = async (
       );
 
       const unseenCount =
-        await Messages.countDocuments({
+        await Message.countDocuments({
           chatId: individualChat._id,
           sender: { $ne: userId },
           seen: false,

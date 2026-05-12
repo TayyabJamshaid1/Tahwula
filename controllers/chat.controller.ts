@@ -9,126 +9,98 @@ import {
   fetchAllChatsService,
 } from "@/services/chat.service";
 
+export const createNewChatController = async (req: NextRequest) => {
+  try {
+    await ConnectToDatabase();
+    const cookieStore = await cookies();
 
-export const createNewChatController =
-  async (req: NextRequest) => {
-    try {
-      await ConnectToDatabase();
-
-      const cookieStore =
-        await cookies();
-
-      const session =
-        cookieStore.get("session")
-          ?.value;
-
-      if (!session) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Unauthorized",
-          },
-          { status: 401 }
-        );
-      }
-
-      const currentUser =
-        await validateSessionAndGetUser(
-          session
-        );
-
-      const { otherUserId } =
-        await req.json();
-
-      if (!otherUserId) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              "Other userId is required",
-          },
-          { status: 400 }
-        );
-      }
-
-      const result =
-        await createNewChatService(
-          currentUser.userId._id.toString(),
-          otherUserId
-        );
-
-      return NextResponse.json(
-        {
-          success: true,
-          message: result.alreadyExists
-            ? "Chat already exists"
-            : "New Chat Created",
-          chatId: result.chatId,
-        },
-        { status: 200 }
-      );
-    } catch (error: any) {
+    const session = cookieStore.get("session")?.value;
+    if (!session) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            error.message ||
-            "Failed to create chat",
+          message: "Unauthorized",
         },
-        { status: 500 }
+        { status: 401 },
       );
     }
-  };
 
-export const fetchAllChatsController =
-  async () => {
-    try {
-      await ConnectToDatabase();
+    const currentUser = await validateSessionAndGetUser(session);
 
-      const cookieStore =
-        await cookies();
+    const { otherUserId } = await req.json();
 
-      const session =
-        cookieStore.get("session")
-          ?.value;
-
-      if (!session) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Unauthorized",
-          },
-          { status: 401 }
-        );
-      }
-
-      const currentUser =
-        await validateSessionAndGetUser(
-          session
-        );
-
-      const chats =
-        await fetchAllChatsService(
-          currentUser.userId._id.toString()
-        );
-
-      return NextResponse.json(
-        {
-          success: true,
-          allChats: chats,
-        },
-        { status: 200 }
-      );
-    } catch (error: any) {
+    if (!otherUserId) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            error.message ||
-            "Failed to fetch chats",
+          message: "Other userId is required",
         },
-        { status: 500 }
+        { status: 400 },
       );
     }
-  };
 
+    const result = await createNewChatService(
+      currentUser.userId._id.toString(),
+      otherUserId,
+    );
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: result.alreadyExists
+          ? "Chat already exists"
+          : "New Chat Created",
+        chatId: result.chatId,
+      },
+      { status: 200 },
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message || "Failed to create chat",
+      },
+      { status: 500 },
+    );
+  }
+};
+
+export const fetchAllChatsController = async () => {
+  try {
+    await ConnectToDatabase();
+
+    const cookieStore = await cookies();
+
+    const session = cookieStore.get("session")?.value;
+
+    if (!session) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized",
+        },
+        { status: 401 },
+      );
+    }
+
+    const currentUser = await validateSessionAndGetUser(session);
+
+    const chats = await fetchAllChatsService(currentUser.userId._id);
+
+    return NextResponse.json(
+      {
+        success: true,
+        allChats: chats,
+      },
+      { status: 200 },
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message || "Failed to fetch chats",
+      },
+      { status: 500 },
+    );
+  }
+};
