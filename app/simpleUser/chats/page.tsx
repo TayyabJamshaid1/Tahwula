@@ -8,7 +8,7 @@ import MessageInput from "./components/MessageInput";
 import { fetchAllUsersThunk, User } from "@/app/store/AuthSlice";
 import ChatSidebar from "./components/ChatSidebar";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useAppDispatch } from "@/app/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import { createNewChatThunk, fetchAllChatsThunk } from "@/app/store/ChatSlice";
 import { queryClient } from "@/components/Providers";
 import { toast } from "react-toastify";
@@ -59,39 +59,7 @@ const mockLoggedInUser: User = {
   email: "me@example.com",
 };
 
-const mockChats: Chat[] = [
-  {
-    chat: {
-      _id: "chat1",
-      isGroupChat: false,
-      unseenCount: 3,
-      latestMessage: { text: "Hey! How are you?", sender: "user1" },
-      updatedAt: new Date().toString(),
-    },
-    user: { _id: "user1", name: "John Doe" },
-  },
-  {
-    chat: {
-      _id: "chat2",
-      isGroupChat: false,
-      unseenCount: 0,
-      latestMessage: { text: "See you tomorrow!", sender: "currentUser" },
-      updatedAt: new Date().toString(),
-    },
-    user: { _id: "user2", name: "Sarah Johnson" },
-  },
-  {
-    chat: {
-      _id: "chat3",
-      isGroupChat: true,
-      groupName: "Dev Team",
-      unseenCount: 5,
-      latestMessage: { text: "Meeting at 3 PM", sender: "user3" },
-      updatedAt: new Date().toString(),
-    },
-    user: { _id: "user3", name: "Mike Wilson" },
-  },
-];
+
 
 const mockMessages: Message[] = [
   {
@@ -128,14 +96,12 @@ const mockMessages: Message[] = [
     createdAt: new Date().toString(),
   },
 ];
-const mockUser: User = {
-  _id: "user2",
-  name: "Sarah Johnson",
-  email: "sarah@example.com",
-};
+
 
 const ChatPageDesign = () => {
   const dispatch = useAppDispatch();
+    const userInfo:User|null=useAppSelector((state) => state?.auth?.user);
+
   const { data: users, isLoading } = useQuery({
     queryKey: ["allChatUsers"],
     queryFn: async () => {
@@ -164,6 +130,7 @@ const ChatPageDesign = () => {
       return await dispatch(fetchAllChatsThunk()).unwrap();
     },
   });
+console.log(userInfo);
 
   // All state declarations preserved from original
   const [isGroupChat, setIsGroupChat] = useState(false);
@@ -173,7 +140,7 @@ const ChatPageDesign = () => {
   const [message, setMessage] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [messages, setMessages] = useState<Message[] | null>(mockMessages);
-  const [user, setUser] = useState<User | null>(mockUser);
+  // const [user, setUser] = useState<User | null>(mockUser);
   const [currentChatDetails, setCurrentChatDetails] =
     useState<GroupDetails | null>(null);
   const [showAllUser, setShowAllUser] = useState(false);
@@ -187,6 +154,8 @@ const ChatPageDesign = () => {
   const createGroupChat = (groupName: string, selectedUsers: string[]) => {};
   const handleMessageSend = async (e: any, imageFile?: File | null) => {};
   const handleTyping = (value: string) => {};
+  console.log(allChats,"allChats");
+  
   if (isLoading || isAllChatLoading || isPending) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
@@ -211,11 +180,11 @@ const ChatPageDesign = () => {
         setGroupName={setGroupName}
         isGroupChat={isGroupChat}
         setIsGroupChat={setIsGroupChat}
-        chats={mockChats}
+        chats={allChats}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
         users={users?.users}
-        loggedInUser={mockLoggedInUser}
+        loggedInUser={userInfo}
         onlineUsers={onlineUsers}
         createChat={createChat}
         createGroupChat={createGroupChat}
@@ -223,7 +192,7 @@ const ChatPageDesign = () => {
 
       <div className="flex-1 flex flex-col justify-between p-4 backdrop-blur-xl bg-white/5 border-1 border-white/10">
         <ChatHeader
-          user={user}
+          user={userInfo}
           isTyping={isTyping}
           setSidebarOpen={setSidebarOpen}
           onlineUsers={onlineUsers}
