@@ -7,7 +7,7 @@ import { RegisterForm } from "@/app/(auth)/register/page";
 export const handleForgotPassword = async (formdata: { email: string }) => {
   try {
     const { email } = formdata;
-    const res = await fetch(`/api/auth/ForgotPassword`, {
+    const res = await fetch(`/api/auth/forgot-password`, {
       method: "POST",
       headers: {
         "Content-type": "application/json",
@@ -115,7 +115,7 @@ export const handleresetPassword = async (formdata: {
   try {
     const { token, password } = formdata;
 
-    const res = await fetch(`/api/auth/ResetPassword`, {
+    const res = await fetch(`/api/auth/reset-password`, {
       method: "POST",
       headers: {
         "Content-type": "application/json",
