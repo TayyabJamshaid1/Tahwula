@@ -3,9 +3,10 @@
 import { ArrowLeft } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
-import StatCard from "@/app/Components/StatCard";
-import OverviewPage from "@/app/Components/OverviewPage";
-import EvidencePage from "@/app/Components/EvidencePage";
+import StatCard from "./components/StatCard";
+import OverviewPage from "./components/OverviewPage";
+import EvidencePage from "./components/EvidencePage";
+
 const statsData = [
   { id: 1, imageName: "FourimageLogo.png", label: "Total Evidence", number: 4 },
   {

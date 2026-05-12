@@ -1,7 +1,7 @@
 // components/ChatSidebar.tsx - Design Only
 "use client";
 
-import { User } from "@/app/lib/AuthSlice";
+import { User } from "@/app/store/AuthSlice";
 import React from "react";
 
 interface ChatSidebarProps {

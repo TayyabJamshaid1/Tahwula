@@ -20,8 +20,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { logoutThunk, user } from "../lib/AuthSlice";
-import { useAppDispatch, useAppSelector } from "../lib/hooks";
+import { logoutThunk, User as UserInterface } from "@/app/store/AuthSlice";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -40,6 +39,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useAppDispatch,useAppSelector } from "@/app/store/hooks";
 
 const base = "/simpleUser";
 interface UserSidebarProps {
@@ -60,7 +60,7 @@ const navigationItems = [
 const Navbar = ({ onMenuClick }: { onMenuClick?: () => void }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const userInfo: user | null = useAppSelector((s) => s.auth.user);
+  const userInfo: UserInterface | null = useAppSelector((s) => s.auth.user);
   const { mutate: LogoutUser, isPending } = useMutation({
     mutationFn: () => dispatch(logoutThunk()).unwrap(),
     onSuccess: async (res) => {

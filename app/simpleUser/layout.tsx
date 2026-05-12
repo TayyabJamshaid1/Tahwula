@@ -41,7 +41,7 @@
 // }
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import UserSidebar from "../Components/User-Sidebar";
+import UserSidebar from "@/components/User-Sidebar";
 
 export default async function ApplicantLayout({
   children,

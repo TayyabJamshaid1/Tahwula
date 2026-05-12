@@ -1,7 +1,7 @@
 // components/ChatHeader.tsx - Design Only
 "use client";
 
-import { User } from "@/app/lib/AuthSlice";
+import { User } from "@/app/store/AuthSlice";
 import React, { useState } from "react";
 
 interface ChatHeaderProps {

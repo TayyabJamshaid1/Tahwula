@@ -2,11 +2,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useRef } from "react";
-import { AppStore, makeStore } from "../lib/store";
 import { Provider } from "react-redux";
-import { User } from "../lib/AuthSlice";
 import AuthHydrator from "./AuthHydrator";
 import { SessionProvider } from "next-auth/react";
+import { User } from "@/app/store/AuthSlice";
+import { makeStore,AppStore } from "@/app/store/store";
 
 export const queryClient = new QueryClient({
   defaultOptions: {

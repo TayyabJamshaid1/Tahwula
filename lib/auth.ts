@@ -13,7 +13,7 @@ export async function getCurrentUser() {
     if (!sessionData) return null;
 
     return {
-      id: sessionData.userId._id.toString(),
+      _id: sessionData.userId._id.toString(),
       role: sessionData.userId.role,
       email: sessionData.userId.email,
       name: sessionData.userId.name,

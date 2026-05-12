@@ -19,8 +19,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { handleForgotPassword } from "@/lib/AuthActions";
 import { ForgotPasswordSchema } from "@/app/api/auth/register.schema";
 import Image from "next/image";
-import { useAppDispatch, useAppSelector } from "@/app/lib/hooks";
-import { forgotPasswordThunk } from "@/app/lib/AuthSlice";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { forgotPasswordThunk } from "@/app/store/AuthSlice";
 import { useRouter } from "next/navigation";
 
 const ForgotComponent: React.FC = () => {

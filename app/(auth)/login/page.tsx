@@ -19,8 +19,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginUserSchema } from "@/app/api/auth/register.schema";
-import { useAppDispatch, useAppSelector } from "@/app/lib/hooks";
-import { loginThunk } from "@/app/lib/AuthSlice";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { loginThunk } from "@/app/store/AuthSlice";
 import Image from "next/image";
 
 const LoginComponent: React.FC = () => {

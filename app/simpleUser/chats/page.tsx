@@ -2,11 +2,11 @@
 "use client";
 
 import React, { useState } from "react";
-import ChatSidebar from "@/components/ChatSidebar";
-import ChatHeader from "@/components/ChatHeader";
-import ChatMessages from "@/components/ChatMessages";
-import MessageInput from "@/components/MessageInput";
-import { User } from "@/app/lib/AuthSlice";
+import ChatHeader from "./components/ChatHeader";
+import ChatMessages from "./components/ChatMessages";
+import MessageInput from "./components/MessageInput";
+import { User } from "@/app/store/AuthSlice";
+import ChatSidebar from "./components/ChatSidebar";
 
 // Type definitions (kept for structure)
 export interface Message {

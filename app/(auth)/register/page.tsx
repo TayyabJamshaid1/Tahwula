@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { registerUserWithConfirmSchema } from "@/app/api/auth/register.schema";
-import { useAppDispatch, useAppSelector } from "@/app/lib/hooks";
-import { registerThunk } from "@/app/lib/AuthSlice";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { registerThunk } from "@/app/store/AuthSlice";
 import Image from "next/image";
 export interface RegisterForm {
   name: string;

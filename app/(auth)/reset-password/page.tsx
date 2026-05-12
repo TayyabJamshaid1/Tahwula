@@ -19,8 +19,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetPasswordSchema } from "@/app/api/auth/register.schema";
 import Image from "next/image";
-import { useAppDispatch, useAppSelector } from "@/app/lib/hooks";
-import { resetPasswordThunk } from "@/app/lib/AuthSlice";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { resetPasswordThunk } from "@/app/store/AuthSlice";
 
 const ResetComponent: React.FC = () => {
   const token = useSearchParams().get("token") || "";

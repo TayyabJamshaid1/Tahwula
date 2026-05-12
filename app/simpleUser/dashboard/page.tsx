@@ -1,12 +1,12 @@
 "use client";
 
-import DashboardStatsSection from "@/app/Components/DashboardComponents/DashboardStatsSection";
-import OverallCompilanceSection from "@/app/Components/DashboardComponents/OverallCompilanceSection";
-import PerformanceSection from "@/app/Components/DashboardComponents/PerformanceSection";
-import PerformingPerspectiveLeaders from "@/app/Components/DashboardComponents/PerformingPerspectiveLeaders";
-import ProgressBarSection from "@/app/Components/DashboardComponents/ProgressBarSection";
-import ProgressData from "@/app/Components/DashboardComponents/ProgressStatus";
-import RecentActivities from "@/app/Components/DashboardComponents/RecentActivities";
+import DashboardStatsSection from "@/app/simpleUser/dashboard/components/DashboardStatsSection";
+import OverallCompilanceSection from "@/app/simpleUser/dashboard/components/OverallCompilanceSection";
+import PerformanceSection from "@/app/simpleUser/dashboard/components/PerformanceSection";
+import PerformingPerspectiveLeaders from "@/app/simpleUser/dashboard/components/PerformingPerspectiveLeaders";
+import ProgressBarSection from "@/app/simpleUser/dashboard/components/ProgressBarSection";
+import ProgressData from "@/app/simpleUser/dashboard/components/ProgressStatus";
+import RecentActivities from "@/app/simpleUser/dashboard/components/RecentActivities";
 
 export default function Page() {
   return (
