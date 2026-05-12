@@ -11,6 +11,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAppDispatch } from "@/app/store/hooks";
 import { createNewChatThunk, fetchAllChatsThunk } from "@/app/store/ChatSlice";
 import { queryClient } from "@/components/Providers";
+import { toast } from "react-toastify";
 
 // Type definitions (kept for structure)
 export interface Message {
@@ -141,14 +142,19 @@ const ChatPageDesign = () => {
       return await dispatch(fetchAllUsersThunk()).unwrap();
     },
   });
-  const { mutate, isPending, variables, isError } = useMutation({
+  const {
+    mutate: createNewChat,
+    isPending,
+    variables,
+    isError,
+  } = useMutation({
     mutationFn: async (otherUserId: string) => {
       return await dispatch(createNewChatThunk(otherUserId)).unwrap();
     },
     onSuccess: async (data) => {
-      console.log(data, "inOnsuccess");
       setSelectedUser(data.chatId);
       setShowAllUser(false);
+      toast.success(data.message);
       await queryClient.invalidateQueries({ queryKey: ["fetchAllChats"] });
     },
   });
@@ -158,7 +164,6 @@ const ChatPageDesign = () => {
       return await dispatch(fetchAllChatsThunk()).unwrap();
     },
   });
-  console.log(allChats);
 
   // All state declarations preserved from original
   const [isGroupChat, setIsGroupChat] = useState(false);
@@ -177,13 +182,22 @@ const ChatPageDesign = () => {
 
   // Mock functions (empty implementations for structure)
   const createChat = (user: User) => {
-    console.log(user);
-    mutate(user._id);
+    createNewChat(user._id);
   };
   const createGroupChat = (groupName: string, selectedUsers: string[]) => {};
   const handleMessageSend = async (e: any, imageFile?: File | null) => {};
   const handleTyping = (value: string) => {};
+  if (isLoading || isAllChatLoading || isPending) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-white/20 border-t-blue-500 rounded-full animate-spin" />
 
+          <p className="text-gray-300 text-sm">Loading chats...</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen flex bg-gray-900 text-white relative overflow-hidden">
       <ChatSidebar
