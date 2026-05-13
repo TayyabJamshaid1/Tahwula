@@ -1,11 +1,11 @@
-import  Chat  from "@/models/Chat";
+import Chat from "@/models/Chat";
 import Message from "@/models/Messages";
 import User from "@/models/User";
 import { log } from "console";
 
 export const createNewChatService = async (
   userId: string,
-  otherUserId: string
+  otherUserId: string,
 ) => {
   const existingChat = await Chat.findOne({
     users: {
@@ -31,9 +31,7 @@ export const createNewChatService = async (
   };
 };
 
-export const fetchAllChatsService = async (
-  userId: string
-) => {
+export const fetchAllChatsService = async (userId: string) => {
   const allChats = await Chat.find({
     users: {
       $in: [userId],
@@ -42,33 +40,29 @@ export const fetchAllChatsService = async (
 
   const chatWithOtherUsers = await Promise.all(
     allChats.map(async (individualChat) => {
+      const currentUserId = userId.toString();
+
       const otherUserId = individualChat.users.find(
-        (id: string) => id.toString() !== userId
+        (id: string) => id.toString() !== currentUserId,
       );
-console.log(otherUserId," otherUserId ",userId," userId");
 
-      const unseenCount =
-        await Message.countDocuments({
-          chatId: individualChat._id,
-          sender: { $ne: userId },
-          seen: false,
-        });
+      const unseenCount = await Message.countDocuments({
+        chatId: individualChat._id,
+        sender: { $ne: userId },
+        seen: false,
+      });
 
-      const otherUser =
-        await User.findById(otherUserId).select(
-          "-password"
-        );
+      const otherUser = await User.findById(otherUserId).select("-password");
 
       return {
         user: otherUser,
         chat: {
           ...individualChat.toObject(),
-          latestMessage:
-            individualChat.latestMessage,
+          latestMessage: individualChat.latestMessage,
           unseenCount,
         },
       };
-    })
+    }),
   );
 
   return chatWithOtherUsers;
