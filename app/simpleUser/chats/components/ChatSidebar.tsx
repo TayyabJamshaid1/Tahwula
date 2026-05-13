@@ -75,7 +75,6 @@ const ChatSidebar = ({
       createChat(user);
     }
   };
-console.log(users);
 
   return (
     <aside
@@ -275,7 +274,7 @@ console.log(users);
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <span className={`font-semibold truncate ${isSelected ? "text-white" : "text-gray-200"}`}>
-                          {chat.chat.isGroupChat ? chat.chat.groupName : chat.user.name}
+                          {chat.chat.isGroupChat ? chat.chat.groupName : chat.user.email}
                         </span>
                         {unseenCount > 0 && (
                           <div className="bg-red-600 text-white text-xs font-bold rounded-full min-w-[22px] h-5.5 flex items-center justify-center px-2">

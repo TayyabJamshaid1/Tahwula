@@ -87,7 +87,8 @@ const ChatMessages = ({
                     isSentByMe ? "pr-2 flex-row-reverse" : "pl-2"
                   }`}
                 >
-                  <span>{moment(message.createdAt).format("hh:mm A . MMM D")}</span>
+                  <span>ddssd</span>
+                  {/* <span>{moment(message.createdAt).format("hh:mm A . MMM D")}</span> */}
                   {isSentByMe && (
                     <div className="flex items-center ml-1">
                       {message.seen ? (
@@ -96,7 +97,8 @@ const ChatMessages = ({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                           {message.seenAt && (
-                            <span>{moment(message.seenAt).format("hh:mm A")}</span>
+                            <span>dsdsd</span>
+                            // <span>{moment(message.seenAt).format("hh:mm A")}</span>
                           )}
                         </div>
                       ) : (

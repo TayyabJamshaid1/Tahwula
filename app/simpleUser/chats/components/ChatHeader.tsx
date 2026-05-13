@@ -28,7 +28,6 @@ const ChatHeader = ({
   loggedInUser,
 }: ChatHeaderProps) => {
   const [showMembers, setShowMembers] = useState(false);
-  
   const getOnlineMembersCount = () => {
     if (!isGroupChat) return 0;
     return groupMembers.filter(member => onlineUsers.includes(member._id)).length;
@@ -108,7 +107,7 @@ const ChatHeader = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-1">
               <h2 className="text-2xl font-bold text-white truncate">
-                {isGroupChat ? groupName : user?.name}
+                {isGroupChat ? groupName : user?.email}
               </h2>
               {isGroupChat && (
                 <button

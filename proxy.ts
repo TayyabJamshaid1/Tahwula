@@ -25,18 +25,27 @@
 // export const config = {
 //   matcher: ["/((?!api|_next|favicon.ico).*)"],
 // };
-// proxy.ts
+// proxy.ts - Add this at the very top
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
+  
+  // BLOCK ALL source map requests immediately
+  if (pathname.includes('__nextjs_original-stack-frame')) {
+    return new NextResponse(null, { 
+      status: 204,
+      headers: { 'Cache-Control': 'no-store' }
+    });
+  }
+  
+  // Rest of your existing code...
   const publicRoutes = ["/login", "/register"];
-  const protectedRoutes = [ "/admin", "/simpleUser"]; // Added simpleUser
-
+  const protectedRoutes = [ "/admin", "/simpleUser"];
+  
   const session = (await cookies()).get("session")?.value;
-
+  
   // Add no-cache headers for auth pages to prevent bfcache
   if (publicRoutes.includes(pathname)) {
     const response = NextResponse.next();
@@ -48,17 +57,17 @@ export default async function proxy(req: NextRequest) {
     response.headers.set("Expires", "0");
     return response;
   }
-
+  
   // Not logged in → block protected routes
   if (!session && protectedRoutes.some(p => pathname.startsWith(p))) {
     return NextResponse.redirect(new URL("/login", req.nextUrl));
   }
-
+  
   // Logged in → block auth pages
   if (session && publicRoutes.includes(pathname)) {
     return NextResponse.redirect(new URL("/", req.nextUrl));
   }
-
+  
   return NextResponse.next();
 }
 

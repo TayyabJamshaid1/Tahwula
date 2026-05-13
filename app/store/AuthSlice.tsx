@@ -47,8 +47,6 @@ export const loginThunk = createAsyncThunk(
   "auth/login",
   async (data: { email: string; password: string }, { rejectWithValue }) => {
     const res = await handleLoginSubmit(data);
-    console.log(res, "ressss in slice");
-
     return res;
   },
 );
@@ -91,8 +89,6 @@ export const logoutThunk = createAsyncThunk(
   "auth/logout",
   async (_, { rejectWithValue }) => {
     const res = await handleLogout();
-    console.log(res, "resss");
-
     return res;
   },
 );
@@ -101,8 +97,6 @@ export const fetchAllUsersThunk = createAsyncThunk(
   "auth/fetchAllUsers",
   async (_, { rejectWithValue }) => {
     const res = await FetchAllUsers();
-    console.log(res, "resss");
-
     return res;
   },
 );
@@ -111,8 +105,6 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setAuthFromServer: (state, action) => {
-      console.log(action.payload, "action.payl;oad");
-
       state.status = "authenticated";
       state.user = action.payload;
     },

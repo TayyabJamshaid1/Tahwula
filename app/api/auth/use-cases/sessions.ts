@@ -13,7 +13,7 @@ import "@/models/User";
 import { ConnectToDatabase } from "@/lib/db";
 type CreateSessionData = {
   token: string;
-  userId: number;
+  userId: string;
   ip: string;
   userAgent: string;
 };
@@ -52,7 +52,7 @@ const createUserSession = async ({
   }
 };
 
-export const createSessionAndSetCookies = async (userId: number) => {
+export const createSessionAndSetCookies = async (userId: string) => {
   try {
     const token = crypto.randomBytes(32).toString("hex");
 

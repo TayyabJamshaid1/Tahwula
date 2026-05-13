@@ -34,7 +34,6 @@ export const createNewChatService = async (
 export const fetchAllChatsService = async (
   userId: string
 ) => {
-  console.log("Fetching all chats for user:", userId);
   const allChats = await Chat.find({
     users: {
       $in: [userId],
@@ -46,6 +45,7 @@ export const fetchAllChatsService = async (
       const otherUserId = individualChat.users.find(
         (id: string) => id.toString() !== userId
       );
+console.log(otherUserId," otherUserId ",userId," userId");
 
       const unseenCount =
         await Message.countDocuments({

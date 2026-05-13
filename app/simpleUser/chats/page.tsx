@@ -107,12 +107,12 @@ const ChatPageDesign = () => {
     queryFn: async () => {
       return await dispatch(fetchAllUsersThunk()).unwrap();
     },
+      enabled: !!userInfo, // IMPORTANT
+
   });
   const {
     mutate: createNewChat,
     isPending,
-    variables,
-    isError,
   } = useMutation({
     mutationFn: async (otherUserId: string) => {
       return await dispatch(createNewChatThunk(otherUserId)).unwrap();
@@ -129,8 +129,10 @@ const ChatPageDesign = () => {
     queryFn: async () => {
       return await dispatch(fetchAllChatsThunk()).unwrap();
     },
+    enabled: !!userInfo, // IMPORTANT
   });
-console.log(userInfo);
+  
+  const onlineUsers = useAppSelector(state => state.socket.onlineUsers);
 
   // All state declarations preserved from original
   const [isGroupChat, setIsGroupChat] = useState(false);
@@ -145,7 +147,6 @@ console.log(userInfo);
     useState<GroupDetails | null>(null);
   const [showAllUser, setShowAllUser] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState<string[]>(["user1", "user2"]);
 
   // Mock functions (empty implementations for structure)
   const createChat = (user: User) => {
@@ -154,7 +155,6 @@ console.log(userInfo);
   const createGroupChat = (groupName: string, selectedUsers: string[]) => {};
   const handleMessageSend = async (e: any, imageFile?: File | null) => {};
   const handleTyping = (value: string) => {};
-  console.log(allChats,"allChats");
   
   if (isLoading || isAllChatLoading || isPending) {
     return (

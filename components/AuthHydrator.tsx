@@ -7,7 +7,6 @@ import { useEffect } from "react";
 
 export default function AuthHydrator({ user }: {user:User|null}) {
   const dispatch = useAppDispatch();
-console.log(user);
 
   useEffect(() => {
     if (user) {
