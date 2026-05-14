@@ -66,3 +66,37 @@ export const MessagesByChatId = async (chatId: string) => {
     return { success: false, message: "User Logout Failed" };
   }
 };
+export const sendMessage = async (
+  formData: FormData,
+) => {
+  try {
+    const res = await fetch(
+      `/api/chat/send-message`,
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
+
+    const data = await res.json();
+
+    if (!data?.success) {
+      return {
+        success: false,
+        message: data?.message,
+      };
+    }
+
+    return {
+      success: true,
+      message: data?.message,
+      sender: data?.sender,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message:
+        "User Logout Failed",
+    };
+  }
+};

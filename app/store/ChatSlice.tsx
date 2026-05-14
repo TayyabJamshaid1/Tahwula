@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User } from "./AuthSlice";
-import { createNewChat, FetchAllChats, MessagesByChatId } from "@/lib/ChatActions";
+import { createNewChat, FetchAllChats, MessagesByChatId, sendMessage } from "@/lib/ChatActions";
 
 /*TYPES */
 export interface Message {
@@ -105,7 +105,23 @@ export const fetchChatMessagesThunk = createAsyncThunk(
     }
   },
 );
+export const sendMessageThunk = createAsyncThunk(
+  "chat/sendMessage",
 
+  async (  formData: FormData, thunkAPI) => {
+    try {
+      const response = await sendMessage(formData);
+
+      if (!response.success) {
+        return thunkAPI.rejectWithValue(response.message);
+      }
+
+      return response;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message || "Failed to create chat");
+    }
+  },
+);
 /*  COMMON STATES*/
 const pendingState = (state: ChatState) => {
   state.chatLoading = true;

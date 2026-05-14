@@ -1,8 +1,15 @@
+import cloudinary from "@/lib/cloudinary";
 import Chat from "@/models/Chat";
 import Message from "@/models/Messages";
 import User from "@/models/User";
 import axios from "axios";
-
+import { log } from "console";
+interface SendMessageParams {
+  senderId: string;
+  chatId: string;
+  text?: string;
+  image?: File | null;
+}
 export const createNewChatService = async (
   userId: string,
   otherUserId: string,
@@ -127,13 +134,14 @@ export const getMessagesByChatService = async (
 
   // FETCH OTHER USER
   const otherUser = await User.findById(otherUserId).select("-password");
+console.log(process.env.NEXT_PUBLIC_SOCKET_URL,'process.env.NEXT_PUBLIC_SOCKET_URL');
 
   // EMIT SOCKET EVENT TO RECEIVER
   // ONLY IF THERE ARE NEWLY SEEN MESSAGES
   if (messagesToMarkSeen.length > 0) {
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_SOCKET_URL}/socket/emit`,
+        `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/emit`,
         {
           receiverId: otherUserId.toString(),
           event: "messageSeen",
@@ -161,4 +169,181 @@ export const getMessagesByChatService = async (
     messages,
     user: otherUser,
   };
+};
+
+
+export const sendMessageService = async ({
+  senderId,
+  chatId,
+  text,
+  image,
+}: SendMessageParams) => {
+  if (!chatId) {
+    throw new Error("ChatId required");
+  }
+
+  if (!text && !image) {
+    throw new Error("Text or image required");
+  }
+
+  // FIND CHAT
+  const chat = await Chat.findById(chatId);
+
+  if (!chat) {
+    throw new Error("Chat not found");
+  }
+
+  // SECURITY CHECK
+  const isUserInChat = chat.users.some(
+    (userId: string) =>
+      userId.toString() === senderId.toString(),
+  );
+
+  if (!isUserInChat) {
+    throw new Error(
+      "You are not participant of this chat",
+    );
+  }
+
+  // OTHER USER
+  const otherUserId = chat.users.find(
+    (userId: string) =>
+      userId.toString() !== senderId.toString(),
+  );
+
+  if (!otherUserId) {
+    throw new Error("Other user not found");
+  }
+
+  // =========================================
+  // CHECK RECEIVER CHAT ROOM STATUS
+  // =========================================
+console.log(process.env.NEXT_PUBLIC_SOCKET_URL,'process.env.NEXT_PUBLIC_SOCKET_URL');
+
+  const roomCheckResponse = await axios.post(
+    `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/check-room`,
+    {
+      receiverId: otherUserId.toString(),
+      chatId,
+    },
+    {
+      headers: {
+        "x-internal-secret":
+          process.env.INTERNAL_SOCKET_SECRET,
+      },
+    },
+  );
+console.log(roomCheckResponse.data, "room check response");
+  const isReceieverInChatRoom =
+    roomCheckResponse.data.isInRoom;
+
+  // =========================================
+  // IMAGE UPLOAD
+  // =========================================
+
+  let imageData;
+
+  if (image) {
+    const bytes = await image.arrayBuffer();
+
+    const buffer = Buffer.from(bytes);
+
+    const uploadResult =
+      await new Promise<any>(
+        (resolve, reject) => {
+          cloudinary.uploader
+            .upload_stream(
+              {
+                folder: "chat-images",
+              },
+              (error, result) => {
+                if (error) reject(error);
+
+                resolve(result);
+              },
+            )
+            .end(buffer);
+        },
+      );
+
+    imageData = {
+      url: uploadResult.secure_url,
+      publicId: uploadResult.public_id,
+    };
+  }
+
+  // =========================================
+  // MESSAGE DATA
+  // =========================================
+
+  const messageData: any = {
+    chatId,
+    sender: senderId,
+    text: text || "",
+    image: imageData,
+    messageType: image
+      ? "image"
+      : "text",
+
+    // IMPORTANT
+    seen: isReceieverInChatRoom,
+
+    seenAt: isReceieverInChatRoom
+      ? new Date()
+      : undefined,
+  };
+
+  // =========================================
+  // SAVE MESSAGE
+  // =========================================
+
+  const newMessage =
+    await Message.create(messageData);
+
+  // =========================================
+  // UPDATE CHAT
+  // =========================================
+
+  await Chat.findByIdAndUpdate(
+    chatId,
+    {
+      latestMessage: {
+        text: image
+          ? "Image"
+          : text,
+
+        sender: senderId,
+      },
+
+      updatedAt: new Date(),
+    },
+  );
+
+  // =========================================
+  // SOCKET EMITS
+  // =========================================
+
+  await axios.post(
+    `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/emit-message`,
+    {
+      chatId,
+
+      senderId,
+
+      receiverId:
+        otherUserId.toString(),
+
+      message: newMessage,
+
+      isReceieverInChatRoom,
+    },
+    {
+      headers: {
+        "x-internal-secret":
+          process.env.INTERNAL_SOCKET_SECRET,
+      },
+    },
+  );
+
+  return newMessage;
 };

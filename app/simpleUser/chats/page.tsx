@@ -9,11 +9,15 @@ import { fetchAllUsersThunk, User } from "@/app/store/AuthSlice";
 import ChatSidebar from "./components/ChatSidebar";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
-import { createNewChatThunk, fetchAllChatsThunk, fetchChatMessagesThunk } from "@/app/store/ChatSlice";
+import {
+  createNewChatThunk,
+  fetchAllChatsThunk,
+  fetchChatMessagesThunk,
+  sendMessageThunk,
+} from "@/app/store/ChatSlice";
 import { queryClient } from "@/components/Providers";
 import { toast } from "react-toastify";
 import { SocketData } from "@/components/SocketContext";
-import { log } from "console";
 
 // Type definitions (kept for structure)
 export interface Message {
@@ -54,7 +58,6 @@ export interface Chat {
   };
   user: User;
 }
-
 
 const mockMessages: Message[] = [
   {
@@ -114,18 +117,36 @@ const ChatPageDesign = () => {
       await queryClient.invalidateQueries({ queryKey: ["fetchAllChats"] });
     },
   });
-    const { mutate: fetchMessages, isPending: messagesLoading } = useMutation({
-   mutationFn: async (selectedUser: string) => {
+  const { mutate: fetchMessages, isPending: messagesLoading } = useMutation({
+    mutationFn: async (selectedUser: string) => {
       return await dispatch(fetchChatMessagesThunk(selectedUser)).unwrap();
     },
     onSuccess: async (data) => {
-     console.log("Fetched messages successfully:", data);
       setMessages(data.messages);
       setUser(data.selectedChatUser);
     },
     onError: async (err) => {
       console.log(err);
-      toast.error("Product failed to updated in cart");
+      toast.error("Failed to fetch messages");
+    },
+  });
+  const { mutate: sendMessage } = useMutation({
+    mutationFn: async (formData: FormData) => {
+      return await dispatch(sendMessageThunk(formData)).unwrap();
+    },
+    onSuccess: async (data) => {
+      toast.success(data.message);
+      setMessages((prev) => {
+        let currentMessages = prev ? [...prev] : [];
+        let existMessage = currentMessages.some(
+          (m) => m._id === data.message._id,
+        );
+        if (!existMessage) {
+          return [...currentMessages, data.message];
+        }
+        return currentMessages;
+      });
+      setMessage("");
     },
   });
   const { data: allChats, isLoading: isAllChatLoading } = useQuery({
@@ -155,7 +176,24 @@ const ChatPageDesign = () => {
     createNewChat(user._id);
   };
   const createGroupChat = (groupName: string, selectedUsers: string[]) => {};
-  const handleMessageSend = async (e: any, imageFile?: File | null) => {};
+  const handleMessageSend = async (e: any, imageFile?: File | null) => {
+    e.preventDefault();
+
+    if (!message.trim() && !imageFile) return;
+
+    if (!selectedUser) return;
+
+    const formData: FormData = new FormData();
+
+    formData.append("chatId", selectedUser);
+    formData.append("text", message);
+
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
+
+    sendMessage(formData);
+  };
 
   const handleTyping = (value: string) => {
     setMessage(value);
