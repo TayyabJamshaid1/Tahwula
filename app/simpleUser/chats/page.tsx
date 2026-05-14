@@ -54,11 +54,6 @@ export interface Chat {
   user: User;
 }
 
-const mockLoggedInUser: User = {
-  _id: "currentUser",
-  name: "Current User",
-  email: "me@example.com",
-};
 
 const mockMessages: Message[] = [
   {
@@ -244,12 +239,12 @@ const ChatPageDesign = () => {
           groupName={currentChatDetails?.groupName}
           groupMembers={currentChatDetails?.users || []}
           chatId={selectedUser}
-          loggedInUser={mockLoggedInUser}
+          loggedInUser={userInfo}
         />
 
         <ChatMessages
           selectedUser={selectedUser}
-          loggedInUser={mockLoggedInUser}
+          loggedInUser={userInfo}
           messages={messages}
           isGroupChat={currentChatDetails?.isGroupChat || false}
           groupMembers={currentChatDetails?.users || []}
