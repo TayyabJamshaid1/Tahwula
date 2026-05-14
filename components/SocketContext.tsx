@@ -19,7 +19,7 @@ const SocketCtx = createContext<SocketContextType>({
 export const SocketProvider = ({ children }:ProviderProps) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
-  const user = useAppSelector((state) => state.auth.user);
+  const user = useAppSelector((state) => state?.auth?.user);
     useEffect(()=>{
         if (!user?._id) return
         const newSocket=io(process.env.NEXT_PUBLIC_SOCKET_URL!,{
