@@ -1,7 +1,7 @@
 // app/chat/page.tsx - Design Only with Component Structure
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ChatHeader from "./components/ChatHeader";
 import ChatMessages from "./components/ChatMessages";
 import MessageInput from "./components/MessageInput";
@@ -12,6 +12,7 @@ import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import { createNewChatThunk, fetchAllChatsThunk } from "@/app/store/ChatSlice";
 import { queryClient } from "@/components/Providers";
 import { toast } from "react-toastify";
+import { SocketData } from "@/components/SocketContext";
 
 // Type definitions (kept for structure)
 export interface Message {
@@ -59,8 +60,6 @@ const mockLoggedInUser: User = {
   email: "me@example.com",
 };
 
-
-
 const mockMessages: Message[] = [
   {
     _id: "msg1",
@@ -97,23 +96,18 @@ const mockMessages: Message[] = [
   },
 ];
 
-
 const ChatPageDesign = () => {
   const dispatch = useAppDispatch();
-    const userInfo:User|null=useAppSelector((state) => state?.auth?.user);
-
+  const userInfo: User | null = useAppSelector((state) => state?.auth?.user);
+  const { onlineUsers, socket } = SocketData();
   const { data: users, isLoading } = useQuery({
     queryKey: ["allChatUsers"],
     queryFn: async () => {
       return await dispatch(fetchAllUsersThunk()).unwrap();
     },
-      enabled: !!userInfo, // IMPORTANT
-
+    enabled: !!userInfo, // IMPORTANT
   });
-  const {
-    mutate: createNewChat,
-    isPending,
-  } = useMutation({
+  const { mutate: createNewChat, isPending } = useMutation({
     mutationFn: async (otherUserId: string) => {
       return await dispatch(createNewChatThunk(otherUserId)).unwrap();
     },
@@ -131,14 +125,12 @@ const ChatPageDesign = () => {
     },
     enabled: !!userInfo, // IMPORTANT
   });
-  
-  const onlineUsers = useAppSelector(state => state.socket.onlineUsers);
 
   // All state declarations preserved from original
   const [isGroupChat, setIsGroupChat] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [selectedGroupUsers, setSelectedGroupUsers] = useState<string[]>([]);
-  const [selectedUser, setSelectedUser] = useState<string | null>("chat123");
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [messages, setMessages] = useState<Message[] | null>(mockMessages);
@@ -147,15 +139,67 @@ const ChatPageDesign = () => {
     useState<GroupDetails | null>(null);
   const [showAllUser, setShowAllUser] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // Mock functions (empty implementations for structure)
   const createChat = (user: User) => {
     createNewChat(user._id);
   };
   const createGroupChat = (groupName: string, selectedUsers: string[]) => {};
   const handleMessageSend = async (e: any, imageFile?: File | null) => {};
-  const handleTyping = (value: string) => {};
-  
+
+  const handleTyping = (value: string) => {
+    setMessage(value);
+    if (!selectedUser || !socket) return;
+    //sockets setup
+    if (value.trim()) {
+      socket.emit("typing", {
+        userId: userInfo?._id,
+        chatId: selectedUser,
+      });
+    }
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("stopTyping", {
+        userId: userInfo?._id,
+        chatId: selectedUser,
+      });
+    }, 2000);
+  };
+  useEffect(() => {
+    if (selectedUser) {
+      setIsTyping(false);
+      socket?.emit("joinChat", selectedUser);
+      return () => {
+        socket?.emit("leaveChat", selectedUser);
+      };
+    }
+  }, [selectedUser, socket]);
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleUserTyping = (data: any) => {
+      if (data.chatId === selectedUser && data.userId !== userInfo?._id) {
+        setIsTyping(true);
+      }
+    };
+
+    const handleUserStopTyping = (data: any) => {
+      if (data.chatId === selectedUser && data.userId !== userInfo?._id) {
+        setIsTyping(false);
+      }
+    };
+
+    socket.on("userTyping", handleUserTyping);
+    socket.on("userStopTyping", handleUserStopTyping);
+
+    return () => {
+      socket.off("userTyping", handleUserTyping);
+      socket.off("userStopTyping", handleUserStopTyping);
+    };
+  }, [socket, selectedUser, userInfo?._id]);
   if (isLoading || isAllChatLoading || isPending) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">

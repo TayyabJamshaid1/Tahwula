@@ -7,6 +7,8 @@ import AuthHydrator from "./AuthHydrator";
 import { SessionProvider } from "next-auth/react";
 import { User } from "@/app/store/AuthSlice";
 import { makeStore,AppStore } from "@/app/store/store";
+import { Socket } from "dgram";
+import { SocketProvider } from "./SocketContext";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,8 +33,10 @@ export default function Providers({
     <SessionProvider>
     <Provider store={storeRef.current}>
       <QueryClientProvider client={queryClient}>
+        <SocketProvider>
         <AuthHydrator user={user} />
         {children} <ReactQueryDevtools initialIsOpen={false} />
+        </SocketProvider>
       </QueryClientProvider>
     </Provider>
     </SessionProvider>
