@@ -7,6 +7,7 @@ import { validateSessionAndGetUser } from "@/app/api/auth/use-cases/sessions";
 import {
   createNewChatService,
   fetchAllChatsService,
+  getMessagesByChatService,
 } from "@/services/chat.service";
 
 export const createNewChatController = async (req: NextRequest) => {
@@ -101,6 +102,58 @@ export const fetchAllChatsController = async () => {
         message: error.message || "Failed to fetch chats",
       },
       { status: 500 },
+    );
+  }
+};
+export const getMessagesByChatController = async (
+  req: NextRequest,
+  chatId: string
+) => {
+  try {
+    await ConnectToDatabase();
+
+    const cookieStore = await cookies();
+
+    const session =
+      cookieStore.get("session")?.value;
+
+    if (!session) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    const currentUser =
+      await validateSessionAndGetUser(session);
+
+    const result =
+      await getMessagesByChatService(
+        chatId,
+        currentUser.userId._id.toString()
+      );
+
+    return NextResponse.json({
+      success: true,
+      messages: result.messages,
+      user: result.user
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          error.message ||
+          "Failed to fetch messages",
+      },
+      {
+        status: 500,
+      }
     );
   }
 };

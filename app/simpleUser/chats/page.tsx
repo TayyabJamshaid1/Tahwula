@@ -9,10 +9,11 @@ import { fetchAllUsersThunk, User } from "@/app/store/AuthSlice";
 import ChatSidebar from "./components/ChatSidebar";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
-import { createNewChatThunk, fetchAllChatsThunk } from "@/app/store/ChatSlice";
+import { createNewChatThunk, fetchAllChatsThunk, fetchChatMessagesThunk } from "@/app/store/ChatSlice";
 import { queryClient } from "@/components/Providers";
 import { toast } from "react-toastify";
 import { SocketData } from "@/components/SocketContext";
+import { log } from "console";
 
 // Type definitions (kept for structure)
 export interface Message {
@@ -113,6 +114,20 @@ const ChatPageDesign = () => {
       await queryClient.invalidateQueries({ queryKey: ["fetchAllChats"] });
     },
   });
+    const { mutate: fetchMessages, isPending: messagesLoading } = useMutation({
+   mutationFn: async (selectedUser: string) => {
+      return await dispatch(fetchChatMessagesThunk(selectedUser)).unwrap();
+    },
+    onSuccess: async (data) => {
+     console.log("Fetched messages successfully:", data);
+      setMessages(data.messages);
+      setUser(data.selectedChatUser);
+    },
+    onError: async (err) => {
+      console.log(err);
+      toast.error("Product failed to updated in cart");
+    },
+  });
   const { data: allChats, isLoading: isAllChatLoading } = useQuery({
     queryKey: ["fetchAllChats"],
     queryFn: async () => {
@@ -128,8 +143,8 @@ const ChatPageDesign = () => {
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[] | null>(mockMessages);
-  // const [user, setUser] = useState<User | null>(mockUser);
+  const [messages, setMessages] = useState<Message[] | null>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [currentChatDetails, setCurrentChatDetails] =
     useState<GroupDetails | null>(null);
   const [showAllUser, setShowAllUser] = useState(false);
@@ -166,6 +181,7 @@ const ChatPageDesign = () => {
   useEffect(() => {
     if (selectedUser) {
       setIsTyping(false);
+      fetchMessages(selectedUser);
       socket?.emit("joinChat", selectedUser);
       return () => {
         socket?.emit("leaveChat", selectedUser);
@@ -231,7 +247,7 @@ const ChatPageDesign = () => {
 
       <div className="flex-1 flex flex-col justify-between p-4 backdrop-blur-xl bg-white/5 border-1 border-white/10">
         <ChatHeader
-          user={userInfo}
+          user={user}
           isTyping={isTyping}
           setSidebarOpen={setSidebarOpen}
           onlineUsers={onlineUsers}

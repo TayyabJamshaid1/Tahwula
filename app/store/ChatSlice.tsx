@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User } from "./AuthSlice";
-import { createNewChat, FetchAllChats } from "@/lib/ChatActions";
+import { createNewChat, FetchAllChats, MessagesByChatId } from "@/lib/ChatActions";
 
 /*TYPES */
 export interface Message {
@@ -39,6 +39,7 @@ type ChatState = {
   chats: Chats[];
   messages: Message[];
   error: string | null;
+  selectedChatUser: User | null;
 };
 
 /*INITIAL STATE*/
@@ -46,6 +47,7 @@ const initialState: ChatState = {
   chatLoading: false,
   chats: [],
   messages: [],
+  selectedChatUser: null,
   error: null,
 };
 
@@ -75,6 +77,23 @@ export const createNewChatThunk = createAsyncThunk(
   async (otherUserId: string, thunkAPI) => {
     try {
       const response = await createNewChat(otherUserId);
+
+      if (!response.success) {
+        return thunkAPI.rejectWithValue(response.message);
+      }
+
+      return response;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message || "Failed to create chat");
+    }
+  },
+);
+export const fetchChatMessagesThunk = createAsyncThunk(
+  "chat/fetchChatMessages",
+
+  async (chatId: string, thunkAPI) => {
+    try {
+      const response = await MessagesByChatId(chatId);
 
       if (!response.success) {
         return thunkAPI.rejectWithValue(response.message);
@@ -132,7 +151,14 @@ const chatSlice = createSlice({
       .addCase(createNewChatThunk.fulfilled, (state) => {
         state.chatLoading = false;
       })
-      .addCase(createNewChatThunk.rejected, rejectedState);
+      .addCase(createNewChatThunk.rejected, rejectedState)
+       .addCase(fetchChatMessagesThunk.pending, pendingState)
+      .addCase(fetchChatMessagesThunk.fulfilled, (state, action) => {
+        state.chatLoading = false;
+        state.messages = action.payload.messages;
+        state.selectedChatUser = action.payload.selectedChatUser;
+      })
+      .addCase(fetchChatMessagesThunk.rejected, rejectedState);
   },
 });
 

@@ -45,3 +45,24 @@ export const createNewChat = async (otherUserId: string) => {
     return { success: false, message: "Create new chat Failed" };
   }
 };
+
+export const MessagesByChatId = async (chatId: string) => {
+  try {
+    const res = await fetch(`/api/chat/messages/${chatId}`, {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+
+    const data = await res.json();
+
+    if (!data?.success) {
+      return { success: false, message: data?.message };
+    }
+
+    return { success: true, messages: data?.messages,selectedChatUser:data?.user};
+  } catch (err) {
+    return { success: false, message: "User Logout Failed" };
+  }
+};
