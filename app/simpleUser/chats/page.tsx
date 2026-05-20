@@ -62,6 +62,7 @@ export interface Chat {
 const ChatPageDesign = () => {
   const dispatch = useAppDispatch();
   const userInfo: User | null = useAppSelector((state) => state?.auth?.user);
+
   const { onlineUsers, socket } = SocketData();
   const { data: users, isLoading } = useQuery({
     queryKey: ["allChatUsers"],
@@ -111,9 +112,15 @@ const ChatPageDesign = () => {
         return currentMessages;
       });
       setMessage("");
+      const displayText = imageFile ? "Sent an image" : message;
+      moveChatToTop(
+        selectedUser,
+        { text: displayText, sender: data.sender },
+        false,
+      );
     },
   });
-  const { data: allChats, isLoading: isAllChatLoading } = useQuery({
+  let { data: allChats, isLoading: isAllChatLoading } = useQuery({
     queryKey: ["fetchAllChats"],
     queryFn: async () => {
       return await dispatch(fetchAllChatsThunk()).unwrap();
@@ -125,6 +132,7 @@ const ChatPageDesign = () => {
   const [isGroupChat, setIsGroupChat] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [selectedGroupUsers, setSelectedGroupUsers] = useState<string[]>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -140,13 +148,72 @@ const ChatPageDesign = () => {
     createNewChat(user._id);
   };
   const createGroupChat = (groupName: string, selectedUsers: string[]) => {};
+  const moveChatToTop = (
+    chatId: string | null,
+    newMessage: any,
+    updatedUnseenCount = true,
+  ) => {
+    queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
+      if (!prev) return prev;
+      const updatedChats = [...prev];
+      const chatIndex = updatedChats.findIndex(
+        (chat) => chat.chat._id === chatId,
+      );
+      if (chatIndex !== -1) {
+        const [moveChat] = updatedChats.splice(chatIndex, 1);
+        const updatedChat = {
+          ...moveChat,
+          chat: {
+            ...moveChat.chat,
+            latestMessage: {
+              text: newMessage.text,
+              sender: newMessage.sender,
+            },
+            updatedAt: new Date().toString(),
+            unseenCount:
+              updatedUnseenCount && newMessage.sender !== userInfo?._id
+                ? (moveChat.chat.unseenCount || 0) + 1
+                : moveChat.chat.unseenCount || 0,
+          },
+        };
+        updatedChats.unshift(updatedChat);
+      }
+      return updatedChats;
+    });
+  };
+  const resetUnseenCount = (chatId: string) => {
+    queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
+      if (!prev) return prev;
+      return prev.map((chat: any) => {
+        if (chat.chat._id === chatId) {
+          return {
+            ...chat,
+            chat: {
+              ...chat.chat,
+              unseenCount: 0,
+            },
+          };
+        }
+        return chat;
+      });
+    });
+  };
+
   const handleMessageSend = async (e: any, imageFile?: File | null) => {
     e.preventDefault();
 
     if (!message.trim() && !imageFile) return;
 
     if (!selectedUser) return;
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
 
+    socket?.emit("stopTyping", {
+      userId: userInfo?._id,
+      chatId: selectedUser,
+    });
     const formData: FormData = new FormData();
 
     formData.append("chatId", selectedUser);
@@ -154,6 +221,7 @@ const ChatPageDesign = () => {
 
     if (imageFile) {
       formData.append("image", imageFile);
+      setImageFile(imageFile);
     }
 
     sendMessage(formData);
@@ -180,19 +248,55 @@ const ChatPageDesign = () => {
       });
     }, 2000);
   };
-  useEffect(() => {
-    if (selectedUser) {
-      setIsTyping(false);
-      fetchMessages(selectedUser);
-      socket?.emit("joinChat", selectedUser);
-      return () => {
-        socket?.emit("leaveChat", selectedUser);
-      };
-    }
-  }, [selectedUser, socket]);
+
   useEffect(() => {
     if (!socket) return;
-
+    const handleNewMessage = (message: any) => {
+      if (selectedUser == message.chatId) {
+        setMessages((prev) => {
+          if (!prev || prev.length == 0) return [];
+          let currentMessageAlreadyAvaiable = prev.some(
+            (msg) => msg._id == message._id,
+          );
+          if (currentMessageAlreadyAvaiable) {
+            return prev;
+          } else {
+            return [...prev, message];
+          }
+        });
+        moveChatToTop(message.chatId, message, false);
+      } else {
+        moveChatToTop(message.chatId, message, true);
+      }
+    };
+    const MessagesSeen = (data: any) => {
+      if (selectedUser === data?.chatId) {
+        setMessages((prev) => {
+          if (!prev) return null;
+          return prev.map((msg) => {
+            if (
+              msg.sender == userInfo?._id &&
+              data?.messageIds &&
+              data.messageIds.includes(msg._id)
+            ) {
+              return {
+                ...msg,
+                seen: true,
+                seenAt: new Date().toString(),
+              };
+            } else if (msg.sender == userInfo?._id && !data?.messageIds) {
+              return {
+                ...msg,
+                seen: true,
+                seenAt: new Date().toString(),
+              };
+            } else {
+              return msg;
+            }
+          });
+        });
+      }
+    };
     const handleUserTyping = (data: any) => {
       if (data.chatId === selectedUser && data.userId !== userInfo?._id) {
         setIsTyping(true);
@@ -204,15 +308,36 @@ const ChatPageDesign = () => {
         setIsTyping(false);
       }
     };
-
+    socket.on("newMessage", handleNewMessage);
+    socket.on("messagesSeen", MessagesSeen);
     socket.on("userTyping", handleUserTyping);
     socket.on("userStopTyping", handleUserStopTyping);
 
     return () => {
+      socket.off("newMessage", handleNewMessage);
+      socket.off("messagesSeen", MessagesSeen);
       socket.off("userTyping", handleUserTyping);
       socket.off("userStopTyping", handleUserStopTyping);
     };
   }, [socket, selectedUser, userInfo?._id]);
+  useEffect(() => {
+    if (selectedUser) {
+      setIsTyping(false);
+      fetchMessages(selectedUser);
+      resetUnseenCount(selectedUser);
+      socket?.emit("joinChat", selectedUser);
+      return () => {
+        socket?.emit("leaveChat", selectedUser);
+      };
+    }
+  }, [selectedUser, socket]);
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [typingTimeoutRef]);
   if (isLoading || isAllChatLoading || isPending) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
