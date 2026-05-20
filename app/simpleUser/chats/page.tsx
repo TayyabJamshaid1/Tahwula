@@ -59,42 +59,6 @@ export interface Chat {
   user: User;
 }
 
-const mockMessages: Message[] = [
-  {
-    _id: "msg1",
-    chatId: "chat2",
-    sender: "user2",
-    text: "Hey! How are you doing today?",
-    messageType: "text",
-    seen: true,
-    seenAt: new Date().toString(),
-    createdAt: new Date().toString(),
-  },
-  {
-    _id: "msg2",
-    chatId: "chat2",
-    sender: "currentUser",
-    text: "I'm doing great! Thanks for asking 😊",
-    messageType: "text",
-    seen: true,
-    seenAt: new Date().toString(),
-    createdAt: new Date().toString(),
-  },
-  {
-    _id: "msg3",
-    chatId: "chat2",
-    sender: "user2",
-    text: "Check out this photo!",
-    messageType: "image",
-    image: {
-      url: "https://via.placeholder.com/200",
-      publicId: "img1",
-    },
-    seen: false,
-    createdAt: new Date().toString(),
-  },
-];
-
 const ChatPageDesign = () => {
   const dispatch = useAppDispatch();
   const userInfo: User | null = useAppSelector((state) => state?.auth?.user);
