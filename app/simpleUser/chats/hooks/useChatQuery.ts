@@ -23,15 +23,10 @@ export const useChatQuery = (userInfo: User | null) => {
     enabled: !!userInfo,
   });
 
-  const fetchMessages = async (selectedUser: string) => {
-    return await dispatch(fetchChatMessagesThunk(selectedUser)).unwrap();
-  };
-
   return {
     users,
     allChats,
     isUsersLoading,
     isAllChatLoading,
-    fetchMessages,
   };
 };

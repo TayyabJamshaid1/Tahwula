@@ -7,9 +7,8 @@ import ChatMessages from "./components/ChatMessages";
 import MessageInput from "./components/MessageInput";
 import { User } from "@/app/store/AuthSlice";
 import ChatSidebar from "./components/ChatSidebar";
-import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { useAppSelector } from "@/app/store/hooks";
 import { queryClient } from "@/components/Providers";
-import { toast } from "react-toastify";
 import { SocketData } from "@/components/SocketContext";
 import { useChatQuery } from "./hooks/useChatQuery";
 import { useChatMutations } from "./hooks/useChatMutation";
@@ -37,8 +36,9 @@ const ChatPageDesign = () => {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Custom hooks
-  const { users, allChats, isUsersLoading, isAllChatLoading, fetchMessages: fetchMessagesQuery } = useChatQuery(userInfo);
-  
+  const { users, allChats, isUsersLoading, isAllChatLoading } =
+    useChatQuery(userInfo);
+
   const moveChatToTop = (
     chatId: string | null,
     newMessage: any,
@@ -73,7 +73,13 @@ const ChatPageDesign = () => {
     });
   };
 
-  const { createNewChat, fetchMessages, sendMessage, isCreatingChat, messagesLoading } = useChatMutations({
+  const {
+    createNewChat,
+    fetchMessages,
+    sendMessage,
+    isCreatingChat,
+    messagesLoading,
+  } = useChatMutations({
     setSelectedUser,
     setShowAllUser,
     setMessages,
@@ -108,7 +114,7 @@ const ChatPageDesign = () => {
 
     if (!message.trim() && !imageFile) return;
     if (!selectedUser) return;
-    
+
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
@@ -118,7 +124,7 @@ const ChatPageDesign = () => {
       userId: userInfo?._id,
       chatId: selectedUser,
     });
-    
+
     const formData: FormData = new FormData();
     formData.append("chatId", selectedUser);
     formData.append("text", message);
@@ -134,14 +140,14 @@ const ChatPageDesign = () => {
   const handleTyping = (value: string) => {
     setMessage(value);
     if (!selectedUser || !socket) return;
-    
+
     if (value.trim()) {
       socket.emit("typing", {
         userId: userInfo?._id,
         chatId: selectedUser,
       });
     }
-    
+
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
@@ -165,7 +171,7 @@ const ChatPageDesign = () => {
   // Socket event handlers
   useEffect(() => {
     if (!socket) return;
-    
+
     const handleNewMessage = (message: any) => {
       if (selectedUser == message.chatId) {
         setMessages((prev) => {
@@ -184,7 +190,7 @@ const ChatPageDesign = () => {
         moveChatToTop(message.chatId, message, true);
       }
     };
-    
+
     const MessagesSeen = (data: any) => {
       if (selectedUser === data?.chatId) {
         setMessages((prev) => {
@@ -213,7 +219,7 @@ const ChatPageDesign = () => {
         });
       }
     };
-    
+
     const handleUserTyping = (data: any) => {
       if (data.chatId === selectedUser && data.userId !== userInfo?._id) {
         setIsTyping(true);
@@ -225,7 +231,7 @@ const ChatPageDesign = () => {
         setIsTyping(false);
       }
     };
-    
+
     socket.on("newMessage", handleNewMessage);
     socket.on("messagesSeen", MessagesSeen);
     socket.on("userTyping", handleUserTyping);
@@ -329,6 +335,7 @@ const ChatPageDesign = () => {
           messages={messages}
           isGroupChat={currentChatDetails?.isGroupChat || false}
           groupMembers={currentChatDetails?.users || []}
+          messagesLoading={messagesLoading}
         />
 
         <MessageInput
@@ -337,6 +344,7 @@ const ChatPageDesign = () => {
           setMessage={setMessage}
           handleMessageSend={handleMessageSend}
           handleTyping={handleTyping}
+          messagesLoading={messagesLoading}
         />
       </div>
     </div>

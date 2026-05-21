@@ -3,13 +3,14 @@
 
 import React, { useEffect, useRef } from "react";
 import moment from "moment";
-import {  Message} from "@/app/simpleUser/chats/page";
 import { User } from "@/app/store/AuthSlice";
+import { Message } from "../types/chat.types";
 
 interface ChatMessagesProps {
   selectedUser: string | null;
   messages: Message[] | null;
   loggedInUser: User | null;
+  messagesLoading?: boolean;
   isGroupChat?: boolean;
   groupMembers?: User[];
 }
@@ -19,6 +20,7 @@ const ChatMessages = ({
   messages,
   loggedInUser,
   isGroupChat = false,
+  messagesLoading = false,
   groupMembers = [],
 }: ChatMessagesProps) => {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -44,11 +46,21 @@ const ChatMessages = ({
       </div>
     );
   }
+  if (messagesLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-white/20 border-t-blue-500 rounded-full animate-spin" />
+          <p className="text-gray-300 text-sm">Loading messages...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-hidden">
       <div className="w-full max-h-[calc(100vh-215px)] overflow-y-auto p-2 space-y-2 custom-scroll">
-        {messages && messages.length > 0 ? (
+        {   messages && messages.length > 0 ? (
           messages.map((message, index) => {
             const isSentByMe = message.sender === loggedInUser?._id;
             const senderName = getSenderName(message.sender);
@@ -87,8 +99,7 @@ const ChatMessages = ({
                     isSentByMe ? "pr-2 flex-row-reverse" : "pl-2"
                   }`}
                 >
-                  <span>ddssd</span>
-                  {/* <span>{moment(message.createdAt).format("hh:mm A . MMM D")}</span> */}
+                  <span>{moment(message.createdAt).format("hh:mm A . MMM D")}</span>
                   {isSentByMe && (
                     <div className="flex items-center ml-1">
                       {message.seen ? (
@@ -97,8 +108,7 @@ const ChatMessages = ({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                           {message.seenAt && (
-                            <span>dsdsd</span>
-                            // <span>{moment(message.seenAt).format("hh:mm A")}</span>
+                            <span>{moment(message.seenAt).format("hh:mm A")}</span>
                           )}
                         </div>
                       ) : (

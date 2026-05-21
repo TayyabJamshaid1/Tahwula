@@ -1,8 +1,6 @@
 // components/MessageInput.tsx - Design Only
 "use client";
-
 import React, { useState } from "react";
-
 interface MessageInputProps {
   selectedUser: string | null;
   message: string;
@@ -12,6 +10,7 @@ interface MessageInputProps {
     e: React.FormEvent<HTMLFormElement>,
     imageFile?: File | null,
   ) => Promise<void>;
+  messagesLoading?: boolean;
 }
 
 const MessageInput = ({
@@ -19,7 +18,8 @@ const MessageInput = ({
   message,
   setMessage,
   handleMessageSend,
-  handleTyping
+  messagesLoading = false,
+  handleTyping,
 }: MessageInputProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -34,7 +34,7 @@ const MessageInput = ({
   };
 
   if (!selectedUser) return null;
-
+  if (messagesLoading) return null;
   return (
     <form
       onSubmit={handleSubmit}
@@ -52,17 +52,37 @@ const MessageInput = ({
             className="absolute -top-2 -right-2 bg-black rounded-full p-1 hover:bg-gray-800 transition-colors"
             onClick={() => setImageFile(null)}
           >
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
       )}
-      
+
       <div className="flex items-center gap-2">
         <label className="cursor-pointer bg-gray-700 hover:bg-gray-600 rounded-lg px-3 py-2 transition-colors">
-          <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+          <svg
+            className="w-4 h-4 text-gray-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+            />
           </svg>
           <input
             type="file"
@@ -76,7 +96,7 @@ const MessageInput = ({
             }}
           />
         </label>
-        
+
         <input
           type="text"
           value={message}
@@ -87,19 +107,39 @@ const MessageInput = ({
           className="flex-1 bg-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder={imageFile ? "Add a caption..." : "Type your message..."}
         />
-        
+
         <button
           type="submit"
           disabled={isUploading || (!message.trim() && !imageFile)}
           className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isUploading ? (
-            <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <svg
+              className="w-4 h-4 animate-spin"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
             </svg>
           ) : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+              />
             </svg>
           )}
         </button>
