@@ -1,134 +1,26 @@
-// app/chat/page.tsx - Design Only with Component Structure
+// app/chat/page.tsx
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import ChatHeader from "./components/ChatHeader";
 import ChatMessages from "./components/ChatMessages";
 import MessageInput from "./components/MessageInput";
-import { fetchAllUsersThunk, User } from "@/app/store/AuthSlice";
+import { User } from "@/app/store/AuthSlice";
 import ChatSidebar from "./components/ChatSidebar";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
-import {
-  createNewChatThunk,
-  fetchAllChatsThunk,
-  fetchChatMessagesThunk,
-  sendMessageThunk,
-} from "@/app/store/ChatSlice";
 import { queryClient } from "@/components/Providers";
 import { toast } from "react-toastify";
 import { SocketData } from "@/components/SocketContext";
+import { useChatQuery } from "./hooks/useChatQuery";
+import { useChatMutations } from "./hooks/useChatMutation";
+import { GroupDetails, Message } from "./types/chat.types";
 
-// Type definitions (kept for structure)
-export interface Message {
-  _id: string;
-  chatId: string;
-  sender: string;
-  text?: string;
-  image?: {
-    url: string;
-    publicId: string;
-  };
-  messageType: "text" | "image";
-  seen: boolean;
-  seenAt?: string;
-  createdAt: string;
-}
-
-export interface GroupDetails {
-  _id: string;
-  isGroupChat: boolean;
-  groupName?: string;
-  groupAdmin?: string;
-  users: User[];
-  participants?: string[];
-}
-
-export interface Chat {
-  chat: {
-    _id: string;
-    isGroupChat: boolean;
-    groupName?: string;
-    unseenCount: number;
-    latestMessage?: {
-      text: string;
-      sender: string;
-    };
-    updatedAt: string;
-  };
-  user: User;
-}
-
+// Type definitions
 const ChatPageDesign = () => {
-  const dispatch = useAppDispatch();
   const userInfo: User | null = useAppSelector((state) => state?.auth?.user);
-
   const { onlineUsers, socket } = SocketData();
-  const { data: users, isLoading } = useQuery({
-    queryKey: ["allChatUsers"],
-    queryFn: async () => {
-      return await dispatch(fetchAllUsersThunk()).unwrap();
-    },
-    enabled: !!userInfo, // IMPORTANT
-  });
-  const { mutate: createNewChat, isPending } = useMutation({
-    mutationFn: async (otherUserId: string) => {
-      return await dispatch(createNewChatThunk(otherUserId)).unwrap();
-    },
-    onSuccess: async (data) => {
-      setSelectedUser(data.chatId);
-      setShowAllUser(false);
-      toast.success(data.message);
-      await queryClient.invalidateQueries({ queryKey: ["fetchAllChats"] });
-    },
-  });
-  const { mutate: fetchMessages, isPending: messagesLoading } = useMutation({
-    mutationFn: async (selectedUser: string) => {
-      return await dispatch(fetchChatMessagesThunk(selectedUser)).unwrap();
-    },
-    onSuccess: async (data) => {
-      setMessages(data.messages);
-      setUser(data.selectedChatUser);
-    },
-    onError: async (err) => {
-      console.log(err);
-      toast.error("Failed to fetch messages");
-    },
-  });
-  const { mutate: sendMessage } = useMutation({
-    mutationFn: async (formData: FormData) => {
-      return await dispatch(sendMessageThunk(formData)).unwrap();
-    },
-    onSuccess: async (data) => {
-      toast.success(data.message);
-      setMessages((prev) => {
-        let currentMessages = prev ? [...prev] : [];
-        let existMessage = currentMessages.some(
-          (m) => m._id === data.message._id,
-        );
-        if (!existMessage) {
-          return [...currentMessages, data.message];
-        }
-        return currentMessages;
-      });
-      setMessage("");
-      const displayText = imageFile ? "Sent an image" : message;
-      moveChatToTop(
-        selectedUser,
-        { text: displayText, sender: data.sender },
-        false,
-      );
-    },
-  });
-  let { data: allChats, isLoading: isAllChatLoading } = useQuery({
-    queryKey: ["fetchAllChats"],
-    queryFn: async () => {
-      return await dispatch(fetchAllChatsThunk()).unwrap();
-    },
-    enabled: !!userInfo, // IMPORTANT
-  });
 
-  // All state declarations preserved from original
+  // State declarations
   const [isGroupChat, setIsGroupChat] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [selectedGroupUsers, setSelectedGroupUsers] = useState<string[]>([]);
@@ -143,11 +35,10 @@ const ChatPageDesign = () => {
   const [showAllUser, setShowAllUser] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  // Mock functions (empty implementations for structure)
-  const createChat = (user: User) => {
-    createNewChat(user._id);
-  };
-  const createGroupChat = (groupName: string, selectedUsers: string[]) => {};
+
+  // Custom hooks
+  const { users, allChats, isUsersLoading, isAllChatLoading, fetchMessages: fetchMessagesQuery } = useChatQuery(userInfo);
+  
   const moveChatToTop = (
     chatId: string | null,
     newMessage: any,
@@ -181,6 +72,19 @@ const ChatPageDesign = () => {
       return updatedChats;
     });
   };
+
+  const { createNewChat, fetchMessages, sendMessage, isCreatingChat, messagesLoading } = useChatMutations({
+    setSelectedUser,
+    setShowAllUser,
+    setMessages,
+    setMessage,
+    imageFile,
+    message,
+    selectedUser,
+    userInfo,
+    moveChatToTop,
+  });
+
   const resetUnseenCount = (chatId: string) => {
     queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
       if (!prev) return prev;
@@ -203,8 +107,8 @@ const ChatPageDesign = () => {
     e.preventDefault();
 
     if (!message.trim() && !imageFile) return;
-
     if (!selectedUser) return;
+    
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
@@ -214,8 +118,8 @@ const ChatPageDesign = () => {
       userId: userInfo?._id,
       chatId: selectedUser,
     });
+    
     const formData: FormData = new FormData();
-
     formData.append("chatId", selectedUser);
     formData.append("text", message);
 
@@ -230,13 +134,14 @@ const ChatPageDesign = () => {
   const handleTyping = (value: string) => {
     setMessage(value);
     if (!selectedUser || !socket) return;
-    //sockets setup
+    
     if (value.trim()) {
       socket.emit("typing", {
         userId: userInfo?._id,
         chatId: selectedUser,
       });
     }
+    
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
@@ -249,16 +154,26 @@ const ChatPageDesign = () => {
     }, 2000);
   };
 
+  const createChat = (user: User) => {
+    createNewChat(user._id);
+  };
+
+  const createGroupChat = (groupName: string, selectedUsers: string[]) => {
+    // Implementation for group chat creation
+  };
+
+  // Socket event handlers
   useEffect(() => {
     if (!socket) return;
+    
     const handleNewMessage = (message: any) => {
       if (selectedUser == message.chatId) {
         setMessages((prev) => {
           if (!prev || prev.length == 0) return [];
-          let currentMessageAlreadyAvaiable = prev.some(
+          let currentMessageAlreadyAvailable = prev.some(
             (msg) => msg._id == message._id,
           );
-          if (currentMessageAlreadyAvaiable) {
+          if (currentMessageAlreadyAvailable) {
             return prev;
           } else {
             return [...prev, message];
@@ -269,6 +184,7 @@ const ChatPageDesign = () => {
         moveChatToTop(message.chatId, message, true);
       }
     };
+    
     const MessagesSeen = (data: any) => {
       if (selectedUser === data?.chatId) {
         setMessages((prev) => {
@@ -297,6 +213,7 @@ const ChatPageDesign = () => {
         });
       }
     };
+    
     const handleUserTyping = (data: any) => {
       if (data.chatId === selectedUser && data.userId !== userInfo?._id) {
         setIsTyping(true);
@@ -308,6 +225,7 @@ const ChatPageDesign = () => {
         setIsTyping(false);
       }
     };
+    
     socket.on("newMessage", handleNewMessage);
     socket.on("messagesSeen", MessagesSeen);
     socket.on("userTyping", handleUserTyping);
@@ -320,6 +238,7 @@ const ChatPageDesign = () => {
       socket.off("userStopTyping", handleUserStopTyping);
     };
   }, [socket, selectedUser, userInfo?._id]);
+
   useEffect(() => {
     if (selectedUser) {
       setIsTyping(false);
@@ -331,24 +250,43 @@ const ChatPageDesign = () => {
       };
     }
   }, [selectedUser, socket]);
+
   useEffect(() => {
     return () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [typingTimeoutRef]);
-  if (isLoading || isAllChatLoading || isPending) {
+  }, []);
+
+  // Set current chat details when user changes
+  useEffect(() => {
+    if (selectedUser && allChats) {
+      const chat = allChats.find((chat: any) => chat.chat._id === selectedUser);
+      if (chat) {
+        setCurrentChatDetails({
+          _id: chat.chat._id,
+          isGroupChat: chat.chat.isGroupChat,
+          groupName: chat.chat.groupName,
+          groupAdmin: chat.chat.groupAdmin,
+          users: chat.user ? [chat.user] : [],
+        });
+        setUser(chat.user);
+      }
+    }
+  }, [selectedUser, allChats]);
+
+  if (isUsersLoading || isAllChatLoading || isCreatingChat) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-white/20 border-t-blue-500 rounded-full animate-spin" />
-
           <p className="text-gray-300 text-sm">Loading chats...</p>
         </div>
       </div>
     );
   }
+
   return (
     <div className="min-h-screen flex bg-gray-900 text-white relative overflow-hidden">
       <ChatSidebar
