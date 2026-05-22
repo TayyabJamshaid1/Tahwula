@@ -12,7 +12,7 @@ import { queryClient } from "@/components/Providers";
 import { SocketData } from "@/components/SocketContext";
 import { useChatQuery } from "./hooks/useChatQuery";
 import { useChatMutations } from "./hooks/useChatMutation";
-import { GroupDetails, Message } from "./types/chat.types";
+import { Chat, GroupDetails, Message } from "./types/chat.types";
 
 // Type definitions
 const ChatPageDesign = () => {
@@ -171,7 +171,17 @@ const ChatPageDesign = () => {
   // Socket event handlers
   useEffect(() => {
     if (!socket) return;
+    const handleNewChat = (newChat: any) => {
+      queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
+        const chatExists = prev.some(
+          (chat: Chat) => chat.chat._id === newChat._id,
+        );
+        if (chatExists) return prev;
+        return [...prev, newChat];
+      });
 
+      moveChatToTop(newChat._id, newChat.chat.latestMessage, false);
+    };
     const handleNewMessage = (message: any) => {
       if (selectedUser == message.chatId) {
         setMessages((prev) => {
@@ -231,13 +241,14 @@ const ChatPageDesign = () => {
         setIsTyping(false);
       }
     };
-
+    socket.on("newChat", handleNewChat);
     socket.on("newMessage", handleNewMessage);
     socket.on("messagesSeen", MessagesSeen);
     socket.on("userTyping", handleUserTyping);
     socket.on("userStopTyping", handleUserStopTyping);
 
     return () => {
+      socket.off("newChat", handleNewChat);
       socket.off("newMessage", handleNewMessage);
       socket.off("messagesSeen", MessagesSeen);
       socket.off("userTyping", handleUserTyping);

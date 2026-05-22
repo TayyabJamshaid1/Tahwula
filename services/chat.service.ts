@@ -3,7 +3,6 @@ import Chat from "@/models/Chat";
 import Message from "@/models/Messages";
 import User from "@/models/User";
 import axios from "axios";
-import { log } from "console";
 interface SendMessageParams {
   senderId: string;
   chatId: string;
@@ -14,12 +13,20 @@ export const createNewChatService = async (
   userId: string,
   otherUserId: string,
 ) => {
+  // =========================================
+  // CHECK EXISTING CHAT
+  // =========================================
+
   const existingChat = await Chat.findOne({
     users: {
       $all: [userId, otherUserId],
       $size: 2,
     },
   });
+
+  // =========================================
+  // EXISTING CHAT
+  // =========================================
 
   if (existingChat) {
     return {
@@ -28,9 +35,74 @@ export const createNewChatService = async (
     };
   }
 
+  // =========================================
+  // CREATE NEW CHAT
+  // =========================================
+
   const newChat = await Chat.create({
     users: [userId, otherUserId],
   });
+
+  // =========================================
+  // UNSEEN COUNT
+  // =========================================
+
+  const unseenCount = await Message.countDocuments({
+    chatId: newChat._id,
+    sender: { $ne: userId },
+    seen: false,
+  });
+
+  // =========================================
+  // GET OTHER USER DATA
+  // =========================================
+
+  let userData: any = await User.findById(otherUserId).select("-password");
+
+  // =========================================
+  // CHAT OBJECT
+  // =========================================
+
+  const chatObj = {
+    user: userData,
+
+    chat: {
+      ...newChat.toObject(),
+
+      latestMessage: {
+        text: "Start a new chat",
+        sender: userId,
+      },
+
+      unseenCount,
+    },
+  };
+
+  // =========================================
+  // EMIT SOCKET EVENT
+  // =========================================
+
+  try {
+    await axios.post(
+      `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/emit`,
+      {
+        receiverId: otherUserId,
+        event: "newChat",
+        payload: chatObj,
+      },
+      {
+        headers: {
+          "x-internal-secret": process.env.INTERNAL_SOCKET_SECRET,
+        },
+      },
+    );
+  } catch (error) {
+    console.log("Socket emit failed:", error);
+  }
+
+  // =========================================
+  // RETURN
+  // =========================================
 
   return {
     alreadyExists: false,
@@ -88,8 +160,7 @@ export const getMessagesByChatService = async (
 
   // CHECK USER IS PARTICIPANT
   const isUserInChat = chat.users.some(
-    (currentUserId: string) =>
-      currentUserId.toString() === userId.toString(),
+    (currentUserId: string) => currentUserId.toString() === userId.toString(),
   );
 
   if (!isUserInChat) {
@@ -134,7 +205,10 @@ export const getMessagesByChatService = async (
 
   // FETCH OTHER USER
   const otherUser = await User.findById(otherUserId).select("-password");
-console.log(process.env.NEXT_PUBLIC_SOCKET_URL,'process.env.NEXT_PUBLIC_SOCKET_URL');
+  console.log(
+    process.env.NEXT_PUBLIC_SOCKET_URL,
+    "process.env.NEXT_PUBLIC_SOCKET_URL",
+  );
 
   // EMIT SOCKET EVENT TO RECEIVER
   // ONLY IF THERE ARE NEWLY SEEN MESSAGES
@@ -158,10 +232,7 @@ console.log(process.env.NEXT_PUBLIC_SOCKET_URL,'process.env.NEXT_PUBLIC_SOCKET_U
         },
       );
     } catch (socketError) {
-      console.log(
-        "Socket emit failed:",
-        socketError,
-      );
+      console.log("Socket emit failed:", socketError);
     }
   }
 
@@ -170,7 +241,6 @@ console.log(process.env.NEXT_PUBLIC_SOCKET_URL,'process.env.NEXT_PUBLIC_SOCKET_U
     user: otherUser,
   };
 };
-
 
 export const sendMessageService = async ({
   senderId,
@@ -195,20 +265,16 @@ export const sendMessageService = async ({
 
   // SECURITY CHECK
   const isUserInChat = chat.users.some(
-    (userId: string) =>
-      userId.toString() === senderId.toString(),
+    (userId: string) => userId.toString() === senderId.toString(),
   );
 
   if (!isUserInChat) {
-    throw new Error(
-      "You are not participant of this chat",
-    );
+    throw new Error("You are not participant of this chat");
   }
 
   // OTHER USER
   const otherUserId = chat.users.find(
-    (userId: string) =>
-      userId.toString() !== senderId.toString(),
+    (userId: string) => userId.toString() !== senderId.toString(),
   );
 
   if (!otherUserId) {
@@ -218,7 +284,10 @@ export const sendMessageService = async ({
   // =========================================
   // CHECK RECEIVER CHAT ROOM STATUS
   // =========================================
-console.log(process.env.NEXT_PUBLIC_SOCKET_URL,'process.env.NEXT_PUBLIC_SOCKET_URL');
+  console.log(
+    process.env.NEXT_PUBLIC_SOCKET_URL,
+    "process.env.NEXT_PUBLIC_SOCKET_URL",
+  );
 
   const roomCheckResponse = await axios.post(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/check-room`,
@@ -228,14 +297,12 @@ console.log(process.env.NEXT_PUBLIC_SOCKET_URL,'process.env.NEXT_PUBLIC_SOCKET_U
     },
     {
       headers: {
-        "x-internal-secret":
-          process.env.INTERNAL_SOCKET_SECRET,
+        "x-internal-secret": process.env.INTERNAL_SOCKET_SECRET,
       },
     },
   );
-console.log(roomCheckResponse.data, "room check response");
-  const isReceieverInChatRoom =
-    roomCheckResponse.data.isInRoom;
+  console.log(roomCheckResponse.data, "room check response");
+  const isReceieverInChatRoom = roomCheckResponse.data.isInRoom;
 
   // =========================================
   // IMAGE UPLOAD
@@ -248,23 +315,20 @@ console.log(roomCheckResponse.data, "room check response");
 
     const buffer = Buffer.from(bytes);
 
-    const uploadResult =
-      await new Promise<any>(
-        (resolve, reject) => {
-          cloudinary.uploader
-            .upload_stream(
-              {
-                folder: "chat-images",
-              },
-              (error, result) => {
-                if (error) reject(error);
+    const uploadResult = await new Promise<any>((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            folder: "chat-images",
+          },
+          (error, result) => {
+            if (error) reject(error);
 
-                resolve(result);
-              },
-            )
-            .end(buffer);
-        },
-      );
+            resolve(result);
+          },
+        )
+        .end(buffer);
+    });
 
     imageData = {
       url: uploadResult.secure_url,
@@ -281,43 +345,33 @@ console.log(roomCheckResponse.data, "room check response");
     sender: senderId,
     text: text || "",
     image: imageData,
-    messageType: image
-      ? "image"
-      : "text",
+    messageType: image ? "image" : "text",
 
     // IMPORTANT
     seen: isReceieverInChatRoom,
 
-    seenAt: isReceieverInChatRoom
-      ? new Date()
-      : undefined,
+    seenAt: isReceieverInChatRoom ? new Date() : undefined,
   };
 
   // =========================================
   // SAVE MESSAGE
   // =========================================
 
-  const newMessage =
-    await Message.create(messageData);
+  const newMessage = await Message.create(messageData);
 
   // =========================================
   // UPDATE CHAT
   // =========================================
 
-  await Chat.findByIdAndUpdate(
-    chatId,
-    {
-      latestMessage: {
-        text: image
-          ? "Image"
-          : text,
+  await Chat.findByIdAndUpdate(chatId, {
+    latestMessage: {
+      text: image ? "Image" : text,
 
-        sender: senderId,
-      },
-
-      updatedAt: new Date(),
+      sender: senderId,
     },
-  );
+
+    updatedAt: new Date(),
+  });
 
   // =========================================
   // SOCKET EMITS
@@ -330,8 +384,7 @@ console.log(roomCheckResponse.data, "room check response");
 
       senderId,
 
-      receiverId:
-        otherUserId.toString(),
+      receiverId: otherUserId.toString(),
 
       message: newMessage,
 
@@ -339,8 +392,7 @@ console.log(roomCheckResponse.data, "room check response");
     },
     {
       headers: {
-        "x-internal-secret":
-          process.env.INTERNAL_SOCKET_SECRET,
+        "x-internal-secret": process.env.INTERNAL_SOCKET_SECRET,
       },
     },
   );
