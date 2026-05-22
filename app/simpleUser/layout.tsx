@@ -39,6 +39,7 @@
 //     </div>
 //   );
 // }
+export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import UserSidebar from "@/components/User-Sidebar";
