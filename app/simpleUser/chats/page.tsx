@@ -79,6 +79,7 @@ const ChatPageDesign = () => {
     sendMessage,
     isCreatingChat,
     messagesLoading,
+    isSendingMessage
   } = useChatMutations({
     setSelectedUser,
     setShowAllUser,
@@ -111,7 +112,7 @@ const ChatPageDesign = () => {
 
   const handleMessageSend = async (e: any, imageFile?: File | null) => {
     e.preventDefault();
-
+    if (isSendingMessage) return; 
     if (!message.trim() && !imageFile) return;
     if (!selectedUser) return;
 
@@ -355,6 +356,7 @@ const ChatPageDesign = () => {
           setMessage={setMessage}
           handleMessageSend={handleMessageSend}
           handleTyping={handleTyping}
+          isSendingMessage={isSendingMessage}
           messagesLoading={messagesLoading}
         />
       </div>

@@ -6,6 +6,7 @@ interface MessageInputProps {
   message: string;
   setMessage: React.Dispatch<React.SetStateAction<string>>;
   handleTyping: (val: string) => void;
+  isSendingMessage: boolean;
   handleMessageSend: (
     e: React.FormEvent<HTMLFormElement>,
     imageFile?: File | null,
@@ -17,6 +18,7 @@ const MessageInput = ({
   selectedUser,
   message,
   setMessage,
+  isSendingMessage=false,
   handleMessageSend,
   messagesLoading = false,
   handleTyping,
@@ -104,13 +106,14 @@ const MessageInput = ({
             setMessage(e.target.value);
             handleTyping(e.target.value);
           }}
+          disabled={isUploading || isSendingMessage}
           className="flex-1 bg-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder={imageFile ? "Add a caption..." : "Type your message..."}
         />
 
         <button
           type="submit"
-          disabled={isUploading || (!message.trim() && !imageFile)}
+          disabled={isUploading || isSendingMessage || (!message.trim() && !imageFile)}
           className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isUploading ? (
