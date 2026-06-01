@@ -12,7 +12,7 @@ import { SocketData } from "@/components/SocketContext";
 import { useChatQuery } from "./hooks/useChatQuery";
 import { useChatMutations } from "./hooks/useChatMutation";
 import { Chat, GroupDetails, Message } from "./types/chat.types";
-import ChatSidebar from "./components/ChatSidebar"; // New component for chat list
+import ChatSidebar from "./components/ChatSidebar";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -21,9 +21,6 @@ const ChatPageDesign = () => {
   const { onlineUsers, socket } = SocketData();
 
   // State declarations
-  const [isGroupChat, setIsGroupChat] = useState(false);
-  const [groupName, setGroupName] = useState("");
-  const [selectedGroupUsers, setSelectedGroupUsers] = useState<string[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [message, setMessage] = useState("");
@@ -131,7 +128,6 @@ const ChatPageDesign = () => {
 
     if (imageFile) {
       formData.append("image", imageFile);
-      setImageFile(imageFile);
     }
 
     sendMessage(formData);
@@ -183,7 +179,7 @@ const ChatPageDesign = () => {
     const handleNewMessage = (message: any) => {
       if (selectedUser == message.chatId) {
         setMessages((prev) => {
-          if (!prev || prev.length == 0) return [];
+          if (!prev || prev.length == 0) return [message];
           let currentMessageAlreadyAvailable = prev.some(
             (msg) => msg._id == message._id,
           );
@@ -293,22 +289,23 @@ const ChatPageDesign = () => {
 
   if (isUsersLoading || isAllChatLoading || isCreatingChat) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+      <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-white/20 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-gray-300 text-sm">Loading chats...</p>
+          <div className="w-12 h-12 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin" />
+          <p className="text-gray-400 text-sm">Loading chats...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex bg-gray-900 text-white relative">
-      {/* Chat List Sidebar - Slides from left on mobile */}
+    <div className="h-[calc(100vh-4rem)] flex overflow-hidden">
+      {/* Chat List Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-40 w-80 bg-gray-900 border-r border-gray-700 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
           showChatList ? "translate-x-0" : "-translate-x-full"
         }`}
+        style={{  height: 'calc(100vh - 4rem)' }}
       >
         <ChatSidebar
           showAllUsers={showAllUser}
@@ -334,7 +331,7 @@ const ChatPageDesign = () => {
       )}
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile header with menu button */}
         <div className="lg:hidden flex items-center gap-3 p-4 border-b border-gray-700 bg-gray-900 sticky top-0 z-10">
           <Button
@@ -348,7 +345,7 @@ const ChatPageDesign = () => {
           {selectedUser && (
             <div className="flex-1">
               <h3 className="font-semibold text-white">
-                {user?.email}
+                { user?.name || user?.email?.split('@')[0]}
               </h3>
               {!currentChatDetails?.isGroupChat && (
                 <p className="text-xs text-gray-400">
@@ -373,33 +370,40 @@ const ChatPageDesign = () => {
           </div>
         ) : (
           <>
-            <div className="hidden lg:block">
+            {/* Desktop Header - Hidden on mobile */}
+            <div className="hidden lg:block flex-shrink-0">
               <ChatHeader
                 user={user}
                 isTyping={isTyping}
                 setSidebarOpen={() => {}}
-                onlineUsers={onlineUsers}          
+                onlineUsers={onlineUsers}
                 chatId={selectedUser}
                 loggedInUser={userInfo}
               />
             </div>
 
-            <ChatMessages
-              selectedUser={selectedUser}
-              loggedInUser={userInfo}
-              messages={messages}
-              messagesLoading={messagesLoading}
-            />
+            {/* Messages Area - Takes remaining space */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <ChatMessages
+                selectedUser={selectedUser}
+                loggedInUser={userInfo}
+                messages={messages}
+                messagesLoading={messagesLoading}
+              />
+            </div>
 
-            <MessageInput
-              selectedUser={selectedUser}
-              message={message}
-              setMessage={setMessage}
-              handleMessageSend={handleMessageSend}
-              handleTyping={handleTyping}
-              isSendingMessage={isSendingMessage}
-              messagesLoading={messagesLoading}
-            />
+            {/* Input Area - Fixed at bottom */}
+            <div className="flex-shrink-0">
+              <MessageInput
+                selectedUser={selectedUser}
+                message={message}
+                setMessage={setMessage}
+                handleMessageSend={handleMessageSend}
+                handleTyping={handleTyping}
+                isSendingMessage={isSendingMessage}
+                messagesLoading={messagesLoading}
+              />
+            </div>
           </>
         )}
       </div>
