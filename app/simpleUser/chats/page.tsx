@@ -129,6 +129,7 @@ const ChatPageDesign = () => {
     if (imageFile) {
       formData.append("image", imageFile);
     }
+console.log(formData,"formData");
 
     sendMessage(formData);
   };

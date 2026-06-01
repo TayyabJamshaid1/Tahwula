@@ -262,6 +262,7 @@ export const sendMessageService = async ({
   if (!chat) {
     throw new Error("Chat not found");
   }
+console.log(chat,"chat");
 
   // SECURITY CHECK
   const isUserInChat = chat.users.some(
@@ -271,6 +272,7 @@ export const sendMessageService = async ({
   if (!isUserInChat) {
     throw new Error("You are not participant of this chat");
   }
+console.log(isUserInChat,"isUserInChat");
 
   // OTHER USER
   const otherUserId = chat.users.find(
@@ -280,6 +282,7 @@ export const sendMessageService = async ({
   if (!otherUserId) {
     throw new Error("Other user not found");
   }
+console.log(otherUserId,"otherUserId");
 
   // =========================================
   // CHECK RECEIVER CHAT ROOM STATUS

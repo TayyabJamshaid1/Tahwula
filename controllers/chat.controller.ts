@@ -182,6 +182,9 @@ export const sendMessageController = async (req: NextRequest) => {
     const text = formData.get("text") as string;
 
     const image = formData.get("image") as File | null;
+console.log( chatId,
+      text,
+      image,"controller");
 
     const result = await sendMessageService({
       senderId: currentUser.userId._id.toString(),
