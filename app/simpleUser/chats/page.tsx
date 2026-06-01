@@ -173,6 +173,7 @@ const ChatPageDesign = () => {
   useEffect(() => {
     if (!socket) return;
     const handleNewChat = (newChat: any) => {
+      console.log("Received new chat via socket:", newChat);
       queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
         const chatExists = prev.some(
           (chat: Chat) => chat.chat._id === newChat._id,
