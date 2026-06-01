@@ -1,6 +1,7 @@
-// components/MessageInput.tsx - Design Only
+// components/MessageInput.tsx
 "use client";
 import React, { useState } from "react";
+
 interface MessageInputProps {
   selectedUser: string | null;
   message: string;
@@ -37,17 +38,18 @@ const MessageInput = ({
 
   if (!selectedUser) return null;
   if (messagesLoading) return null;
+  
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-2 border-t border-gray-700 pt-2"
+      className="flex flex-col gap-2 border-t border-gray-700 pt-2 mt-2"
     >
       {imageFile && (
         <div className="relative w-fit">
           <img
             src={URL.createObjectURL(imageFile)}
             alt="Preview"
-            className="w-24 h-24 object-cover rounded-lg border border-gray-600"
+            className="w-16 h-16 sm:w-24 sm:h-24 object-cover rounded-lg border border-gray-600"
           />
           <button
             type="button"
@@ -55,7 +57,7 @@ const MessageInput = ({
             onClick={() => setImageFile(null)}
           >
             <svg
-              className="w-4 h-4 text-white"
+              className="w-3 h-3 sm:w-4 sm:h-4 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -72,7 +74,7 @@ const MessageInput = ({
       )}
 
       <div className="flex items-center gap-2">
-        <label className="cursor-pointer bg-gray-700 hover:bg-gray-600 rounded-lg px-3 py-2 transition-colors">
+        <label className="cursor-pointer bg-gray-700 hover:bg-gray-600 rounded-lg px-2 py-2 sm:px-3 sm:py-2 transition-colors">
           <svg
             className="w-4 h-4 text-gray-300"
             fill="none"
@@ -107,14 +109,14 @@ const MessageInput = ({
             handleTyping(e.target.value);
           }}
           disabled={isUploading || isSendingMessage}
-          className="flex-1 bg-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 bg-gray-700 rounded-lg px-3 py-2 sm:px-4 sm:py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
           placeholder={imageFile ? "Add a caption..." : "Type your message..."}
         />
 
         <button
           type="submit"
           disabled={isUploading || isSendingMessage || (!message.trim() && !imageFile)}
-          className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-blue-600 hover:bg-blue-700 px-3 py-2 sm:px-4 sm:py-2 rounded-lg transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isUploading ? (
             <svg

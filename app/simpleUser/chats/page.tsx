@@ -6,15 +6,16 @@ import ChatHeader from "./components/ChatHeader";
 import ChatMessages from "./components/ChatMessages";
 import MessageInput from "./components/MessageInput";
 import { User } from "@/app/store/AuthSlice";
-import ChatSidebar from "./components/ChatSidebar";
 import { useAppSelector } from "@/app/store/hooks";
 import { queryClient } from "@/components/Providers";
 import { SocketData } from "@/components/SocketContext";
 import { useChatQuery } from "./hooks/useChatQuery";
 import { useChatMutations } from "./hooks/useChatMutation";
 import { Chat, GroupDetails, Message } from "./types/chat.types";
+import ChatSidebar from "./components/ChatSidebar"; // New component for chat list
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-// Type definitions
 const ChatPageDesign = () => {
   const userInfo: User | null = useAppSelector((state) => state?.auth?.user);
   const { onlineUsers, socket } = SocketData();
@@ -26,18 +27,16 @@ const ChatPageDesign = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [message, setMessage] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showChatList, setShowChatList] = useState(false);
   const [messages, setMessages] = useState<Message[] | null>([]);
   const [user, setUser] = useState<User | null>(null);
-  const [currentChatDetails, setCurrentChatDetails] =
-    useState<GroupDetails | null>(null);
+  const [currentChatDetails, setCurrentChatDetails] = useState<GroupDetails | null>(null);
   const [showAllUser, setShowAllUser] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Custom hooks
-  const { users, allChats, isUsersLoading, isAllChatLoading } =
-    useChatQuery(userInfo);
+  const { users, allChats, isUsersLoading, isAllChatLoading } = useChatQuery(userInfo);
 
   const moveChatToTop = (
     chatId: string | null,
@@ -112,7 +111,7 @@ const ChatPageDesign = () => {
 
   const handleMessageSend = async (e: any, imageFile?: File | null) => {
     e.preventDefault();
-    if (isSendingMessage) return; 
+    if (isSendingMessage) return;
     if (!message.trim() && !imageFile) return;
     if (!selectedUser) return;
 
@@ -163,10 +162,7 @@ const ChatPageDesign = () => {
 
   const createChat = (user: User) => {
     createNewChat(user._id);
-  };
-
-  const createGroupChat = (groupName: string, selectedUsers: string[]) => {
-    // Implementation for group chat creation
+    setShowChatList(false);
   };
 
   // Socket event handlers
@@ -307,59 +303,105 @@ const ChatPageDesign = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-900 text-white relative overflow-hidden">
-      <ChatSidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        showAllUsers={showAllUser}
-        setShowAllUsers={setShowAllUser}
-        selectedGroupUsers={selectedGroupUsers}
-        setSelectedGroupUsers={setSelectedGroupUsers}
-        groupName={groupName}
-        setGroupName={setGroupName}
-        isGroupChat={isGroupChat}
-        setIsGroupChat={setIsGroupChat}
-        chats={allChats}
-        selectedUser={selectedUser}
-        setSelectedUser={setSelectedUser}
-        users={users?.users}
-        loggedInUser={userInfo}
-        onlineUsers={onlineUsers}
-        createChat={createChat}
-        createGroupChat={createGroupChat}
-      />
-
-      <div className="flex-1 flex flex-col justify-between p-4 backdrop-blur-xl bg-white/5 border-1 border-white/10">
-        <ChatHeader
-          user={user}
-          isTyping={isTyping}
-          setSidebarOpen={setSidebarOpen}
+    <div className="h-[calc(100vh-4rem)] flex bg-gray-900 text-white relative">
+      {/* Chat List Sidebar - Slides from left on mobile */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 w-80 bg-gray-900 border-r border-gray-700 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
+          showChatList ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <ChatSidebar
+          showAllUsers={showAllUser}
+          setShowAllUsers={setShowAllUser}
+          chats={allChats}
+          selectedUser={selectedUser}
+          setSelectedUser={setSelectedUser}
+          users={users?.users}
+          loggedInUser={userInfo}
           onlineUsers={onlineUsers}
-          isGroupChat={currentChatDetails?.isGroupChat || false}
-          groupName={currentChatDetails?.groupName}
-          groupMembers={currentChatDetails?.users || []}
-          chatId={selectedUser}
-          loggedInUser={userInfo}
+          createChat={createChat}
+          onCloseMobile={() => setShowChatList(false)}
         />
+      </div>
 
-        <ChatMessages
-          selectedUser={selectedUser}
-          loggedInUser={userInfo}
-          messages={messages}
-          isGroupChat={currentChatDetails?.isGroupChat || false}
-          groupMembers={currentChatDetails?.users || []}
-          messagesLoading={messagesLoading}
+      {/* Mobile overlay */}
+      {showChatList && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          style={{ top: '4rem' }}
+          onClick={() => setShowChatList(false)}
         />
+      )}
 
-        <MessageInput
-          selectedUser={selectedUser}
-          message={message}
-          setMessage={setMessage}
-          handleMessageSend={handleMessageSend}
-          handleTyping={handleTyping}
-          isSendingMessage={isSendingMessage}
-          messagesLoading={messagesLoading}
-        />
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile header with menu button */}
+        <div className="lg:hidden flex items-center gap-3 p-4 border-b border-gray-700 bg-gray-900 sticky top-0 z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowChatList(true)}
+            className="text-white hover:bg-gray-800"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          {selectedUser && (
+            <div className="flex-1">
+              <h3 className="font-semibold text-white">
+                {user?.email}
+              </h3>
+              {!currentChatDetails?.isGroupChat && (
+                <p className="text-xs text-gray-400">
+                  {onlineUsers.includes(user?._id || '') ? 'Online' : 'Offline'}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {!selectedUser ? (
+          <div className="flex-1 flex items-center justify-center p-4">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <p className="text-gray-400">Select a conversation</p>
+              <p className="text-sm text-gray-500 mt-1">Choose a chat from the list to start messaging</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="hidden lg:block">
+              <ChatHeader
+                user={user}
+                isTyping={isTyping}
+                setSidebarOpen={() => {}}
+                onlineUsers={onlineUsers}          
+                chatId={selectedUser}
+                loggedInUser={userInfo}
+              />
+            </div>
+
+            <ChatMessages
+              selectedUser={selectedUser}
+              loggedInUser={userInfo}
+              messages={messages}
+              messagesLoading={messagesLoading}
+            />
+
+            <MessageInput
+              selectedUser={selectedUser}
+              message={message}
+              setMessage={setMessage}
+              handleMessageSend={handleMessageSend}
+              handleTyping={handleTyping}
+              isSendingMessage={isSendingMessage}
+              messagesLoading={messagesLoading}
+            />
+          </>
+        )}
       </div>
     </div>
   );
