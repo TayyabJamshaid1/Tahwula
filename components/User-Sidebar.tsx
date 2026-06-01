@@ -16,6 +16,7 @@ import {
   Menu,
   Search,
   Bell,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -49,7 +50,7 @@ interface UserSidebarProps {
 const navigationItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: base + "/dashboard" },
   { name: "Perspectives", icon: User, href: base + "/perspective" },
-  { name: "Chats", icon: User, href: base + "/chats" },
+  { name: "Chats", icon: MessageCircle, href: base + "/chats" },
   { name: "Tasks", icon: Plus },
   { name: "Documents", icon: Briefcase },
   { name: "Reports", icon: Bookmark },

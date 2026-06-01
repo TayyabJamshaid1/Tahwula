@@ -110,8 +110,6 @@ export const sendMessageThunk = createAsyncThunk(
 
   async (  formData: FormData, thunkAPI) => {
     try {
-      console.log(formData,"formData in thunlk");
-      
       const response = await sendMessage(formData);
 
       if (!response.success) {

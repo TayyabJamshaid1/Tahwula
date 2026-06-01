@@ -15,6 +15,7 @@ import { Chat, GroupDetails, Message } from "./types/chat.types";
 import ChatSidebar from "./components/ChatSidebar";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "react-toastify";
 
 const ChatPageDesign = () => {
   const userInfo: User | null = useAppSelector((state) => state?.auth?.user);
@@ -129,8 +130,6 @@ const ChatPageDesign = () => {
     if (imageFile) {
       formData.append("image", imageFile);
     }
-console.log(formData,"formData");
-
     sendMessage(formData);
   };
 
@@ -167,6 +166,7 @@ console.log(formData,"formData");
     if (!socket) return;
     const handleNewChat = (newChat: any) => {
       console.log("Received new chat via socket:", newChat);
+      toast.info(`You have a new chat with ${newChat.user.name || newChat.user.email.split('@')[0]}`);
       queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
         const chatExists = prev.some(
           (chat: Chat) => chat.chat._id === newChat._id,

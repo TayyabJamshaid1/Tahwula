@@ -101,7 +101,7 @@ const ChatSidebar = ({
           <div className="space-y-4">
            
 
-            <div className="px-4">
+            <div className="px-4 mt-2">
               <input
                 type="text"
                 placeholder={"Search users..."}
