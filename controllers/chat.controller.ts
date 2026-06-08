@@ -131,15 +131,24 @@ export const getMessagesByChatController = async (
 
     const currentUser = await validateSessionAndGetUser(session);
 
+    const { searchParams } = new URL(req.url);
+
+    const page = Number(searchParams.get("page")) || 1;
+    const limit = Number(searchParams.get("limit")) || 30;
+
     const result = await getMessagesByChatService(
       chatId,
       currentUser.userId._id.toString(),
+      page,
+      limit,
     );
-
     return NextResponse.json({
       success: true,
       messages: result.messages,
       user: result.user,
+      chatType: result.chatType,
+      groupInfo: result.groupInfo,
+      pagination: result.pagination,
     });
   } catch (error: any) {
     return NextResponse.json(

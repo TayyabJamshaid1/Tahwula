@@ -1,8 +1,13 @@
 import cloudinary from "@/lib/cloudinary";
+import {
+  formatGroupChatResponse,
+  formatSingleChatResponse,
+} from "@/lib/formatChatResponse";
 import Chat from "@/models/Chat";
 import Message from "@/models/Messages";
 import User from "@/models/User";
 import axios from "axios";
+import mongoose from "mongoose";
 interface SendMessageParams {
   senderId: string;
   chatId: string;
@@ -117,48 +122,69 @@ export const fetchAllChatsService = async (userId: string) => {
     },
   }).sort({ updatedAt: -1 });
 
-  const chatWithOtherUsers = await Promise.all(
+  const formattedChats = await Promise.all(
     allChats.map(async (individualChat) => {
-      const currentUserId = userId.toString();
-
-      const otherUserId = individualChat.users.find(
-        (id: string) => id.toString() !== currentUserId,
-      );
-
       const unseenCount = await Message.countDocuments({
         chatId: individualChat._id,
         sender: { $ne: userId },
-        seen: false,
+        "seenBy.userId": {
+          $ne: userId.toString(),
+        },
       });
+
+      // =========================
+      // GROUP CHAT
+      // =========================
+      if (individualChat.isGroupChat) {
+        const membersData = await User.find({
+          _id: {
+            $in: individualChat.users,
+          },
+        }).select("-password");
+
+        return formatGroupChatResponse({
+          group: individualChat,
+          unseenCount,
+          members: membersData,
+        });
+      }
+
+      // =========================
+      // ONE TO ONE CHAT
+      // =========================
+      const otherUserId = individualChat.users.find(
+        (id: string) => id.toString() !== userId.toString(),
+      );
 
       const otherUser = await User.findById(otherUserId).select("-password");
 
-      return {
+      return formatSingleChatResponse({
+        chat: individualChat,
         user: otherUser,
-        chat: {
-          ...individualChat.toObject(),
-          latestMessage: individualChat.latestMessage,
-          unseenCount,
-        },
-      };
+        unseenCount,
+      });
     }),
   );
 
-  return chatWithOtherUsers;
+  return formattedChats;
 };
 
 export const getMessagesByChatService = async (
   chatId: string,
   userId: string,
+  page = 1,
+  limit = 30,
 ) => {
-  // FIND CHAT
+  if (!mongoose.Types.ObjectId.isValid(chatId)) {
+    throw new Error("Invalid chat id");
+  }
+
   const chat = await Chat.findById(chatId);
 
   if (!chat) {
     throw new Error("Chat not found");
   }
 
-  // CHECK USER IS PARTICIPANT
   const isUserInChat = chat.users.some(
     (currentUserId: string) => currentUserId.toString() === userId.toString(),
   );
@@ -167,62 +193,81 @@ export const getMessagesByChatService = async (
     throw new Error("You are not a participant of this chat");
   }
 
+  // =========================
   // FIND UNSEEN MESSAGES
+  // =========================
+
   const messagesToMarkSeen = await Message.find({
     chatId,
     sender: { $ne: userId },
-    seen: false,
+    "seenBy.userId": {
+      $ne: userId.toString(),
+    },
   });
 
-  // MARK MESSAGES AS SEEN
+  // =========================
+  // MARK AS SEEN
+  // =========================
+
   await Message.updateMany(
     {
       chatId,
       sender: { $ne: userId },
-      seen: false,
+      "seenBy.userId": {
+        $ne: userId.toString(),
+      },
     },
     {
-      seen: true,
-      seenAt: new Date(),
+      $push: {
+        seenBy: {
+          userId: userId.toString(),
+          seenAt: new Date(),
+        },
+      },
     },
   );
 
-  // FETCH ALL MESSAGES
-  const messages = await Message.find({
+  // =========================
+  // PAGINATION
+  // =========================
+
+  const safePage = Number(page) || 1;
+  const safeLimit = Number(limit) || 30;
+  const skip = (safePage - 1) * safeLimit;
+
+  const totalMessages = await Message.countDocuments({
     chatId,
-  }).sort({
-    createdAt: 1,
   });
 
-  // FIND OTHER USER
-  const otherUserId = chat.users.find(
-    (id: string) => id.toString() !== userId.toString(),
-  );
+  const messages = await Message.find({
+    chatId,
+  })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(safeLimit);
 
-  if (!otherUserId) {
-    throw new Error("Other user not found");
-  }
+  const formattedMessages = messages.reverse();
 
-  // FETCH OTHER USER
-  const otherUser = await User.findById(otherUserId).select("-password");
-  console.log(
-    process.env.NEXT_PUBLIC_SOCKET_URL,
-    "process.env.NEXT_PUBLIC_SOCKET_URL",
-  );
+  // =========================
+  // SOCKET SEEN EVENT
+  // =========================
 
-  // EMIT SOCKET EVENT TO RECEIVER
-  // ONLY IF THERE ARE NEWLY SEEN MESSAGES
   if (messagesToMarkSeen.length > 0) {
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/emit`,
+        `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/emit-room`,
         {
-          receiverId: otherUserId.toString(),
-          event: "messageSeen",
+          roomId: chatId,
+          event: "messagesSeen",
           payload: {
             chatId,
             messageIds: messagesToMarkSeen.map((msg) => msg._id),
-            seenBy: userId,
+            seenByUsers: [
+              {
+                userId,
+                seenAt: new Date(),
+              },
+            ],
           },
         },
         {
@@ -232,16 +277,69 @@ export const getMessagesByChatService = async (
         },
       );
     } catch (socketError) {
-      console.log("Socket emit failed:", socketError);
+      console.log("Socket messagesSeen emit failed:", socketError);
     }
   }
 
+  // =========================
+  // GROUP CHAT RESPONSE
+  // =========================
+
+  if (chat.isGroupChat) {
+    const membersData = await User.find({
+      _id: {
+        $in: chat.users,
+      },
+    }).select("-password");
+
+    return {
+      messages: formattedMessages,
+      chatType: "group",
+      groupInfo: {
+        _id: chat._id,
+        groupName: chat.groupName,
+        groupImage: chat.groupImage,
+        admin: chat.admin,
+        users: chat.users,
+        members: membersData,
+      },
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        totalMessages,
+        totalPages: Math.ceil(totalMessages / safeLimit),
+        hasMore: safePage * safeLimit < totalMessages,
+      },
+    };
+  }
+
+  // =========================
+  // SINGLE CHAT RESPONSE
+  // =========================
+
+  const otherUserId = chat.users.find(
+    (id: string) => id.toString() !== userId.toString(),
+  );
+
+  if (!otherUserId) {
+    throw new Error("Other user not found");
+  }
+
+  const otherUser = await User.findById(otherUserId).select("-password");
+
   return {
-    messages,
+    messages: formattedMessages,
+    chatType: "single",
     user: otherUser,
+    pagination: {
+      page: safePage,
+      limit: safeLimit,
+      totalMessages,
+      totalPages: Math.ceil(totalMessages / safeLimit),
+      hasMore: safePage * safeLimit < totalMessages,
+    },
   };
 };
-
 export const sendMessageService = async ({
   senderId,
   chatId,
@@ -256,14 +354,16 @@ export const sendMessageService = async ({
     throw new Error("Text or image required");
   }
 
-  // FIND CHAT
+  if (!mongoose.Types.ObjectId.isValid(chatId)) {
+    throw new Error("Invalid chat id");
+  }
+
   const chat = await Chat.findById(chatId);
 
   if (!chat) {
     throw new Error("Chat not found");
   }
 
-  // SECURITY CHECK
   const isUserInChat = chat.users.some(
     (userId: string) => userId.toString() === senderId.toString(),
   );
@@ -272,47 +372,59 @@ export const sendMessageService = async ({
     throw new Error("You are not participant of this chat");
   }
 
-  // OTHER USER
-  const otherUserId = chat.users.find(
+  // =========================
+  // RECEIVERS
+  // one-to-one => one receiver
+  // group => multiple receivers
+  // =========================
+
+  const receivers = chat.users.filter(
     (userId: string) => userId.toString() !== senderId.toString(),
   );
 
-  if (!otherUserId) {
-    throw new Error("Other user not found");
+  // =========================
+  // CHECK WHO IS ACTIVELY VIEWING CHAT
+  // =========================
+
+  const seenByUsers: {
+    userId: string;
+    seenAt: Date;
+  }[] = [];
+
+  for (const receiverId of receivers) {
+    try {
+      const roomCheckResponse = await axios.post(
+        `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/check-room`,
+        {
+          receiverId: receiverId.toString(),
+          chatId,
+        },
+        {
+          headers: {
+            "x-internal-secret": process.env.INTERNAL_SOCKET_SECRET,
+          },
+        },
+      );
+
+      if (roomCheckResponse.data?.isInRoom) {
+        seenByUsers.push({
+          userId: receiverId.toString(),
+          seenAt: new Date(),
+        });
+      }
+    } catch (error) {
+      console.log("Room check failed:", error);
+    }
   }
 
-  // =========================================
-  // CHECK RECEIVER CHAT ROOM STATUS
-  // =========================================
-  console.log(
-    process.env.NEXT_PUBLIC_SOCKET_URL,
-    "process.env.NEXT_PUBLIC_SOCKET_URL",
-  );
-
-  const roomCheckResponse = await axios.post(
-    `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/check-room`,
-    {
-      receiverId: otherUserId.toString(),
-      chatId,
-    },
-    {
-      headers: {
-        "x-internal-secret": process.env.INTERNAL_SOCKET_SECRET,
-      },
-    },
-  );
-  console.log(roomCheckResponse.data, "room check response");
-  const isReceieverInChatRoom = roomCheckResponse.data.isInRoom;
-
-  // =========================================
+  // =========================
   // IMAGE UPLOAD
-  // =========================================
+  // =========================
 
   let imageData;
 
   if (image) {
     const bytes = await image.arrayBuffer();
-
     const buffer = Buffer.from(bytes);
 
     const uploadResult = await new Promise<any>((resolve, reject) => {
@@ -323,7 +435,6 @@ export const sendMessageService = async ({
           },
           (error, result) => {
             if (error) reject(error);
-
             resolve(result);
           },
         )
@@ -336,9 +447,9 @@ export const sendMessageService = async ({
     };
   }
 
-  // =========================================
+  // =========================
   // MESSAGE DATA
-  // =========================================
+  // =========================
 
   const messageData: any = {
     chatId,
@@ -346,56 +457,97 @@ export const sendMessageService = async ({
     text: text || "",
     image: imageData,
     messageType: image ? "image" : "text",
-
-    // IMPORTANT
-    seen: isReceieverInChatRoom,
-
-    seenAt: isReceieverInChatRoom ? new Date() : undefined,
+    seenBy: seenByUsers,
   };
-
-  // =========================================
-  // SAVE MESSAGE
-  // =========================================
 
   const newMessage = await Message.create(messageData);
 
-  // =========================================
-  // UPDATE CHAT
-  // =========================================
+  // =========================
+  // UPDATE CHAT LATEST MESSAGE
+  // =========================
 
   await Chat.findByIdAndUpdate(chatId, {
     latestMessage: {
       text: image ? "Image" : text,
-
       sender: senderId,
     },
-
     updatedAt: new Date(),
   });
 
-  // =========================================
+  // =========================
   // SOCKET EMITS
-  // =========================================
+  // =========================
 
-  await axios.post(
-    `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/emit-message`,
-    {
-      chatId,
-
-      senderId,
-
-      receiverId: otherUserId.toString(),
-
-      message: newMessage,
-
-      isReceieverInChatRoom,
-    },
-    {
-      headers: {
-        "x-internal-secret": process.env.INTERNAL_SOCKET_SECRET,
+  try {
+    // Send to users who have chat currently opened
+    await axios.post(
+      `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/emit-room`,
+      {
+        roomId: chatId,
+        event: "newMessage",
+        payload: newMessage,
       },
-    },
-  );
+      {
+        headers: {
+          "x-internal-secret": process.env.INTERNAL_SOCKET_SECRET,
+        },
+      },
+    );
+
+    // Send direct event to receivers for sidebar update
+    for (const receiverId of receivers) {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/emit`,
+        {
+          receiverId: receiverId.toString(),
+          event: "newMessage",
+          payload: newMessage,
+        },
+        {
+          headers: {
+            "x-internal-secret": process.env.INTERNAL_SOCKET_SECRET,
+          },
+        },
+      );
+    }
+
+    // Send to sender also for multiple tabs/devices sync
+    await axios.post(
+      `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/emit`,
+      {
+        receiverId: senderId,
+        event: "newMessage",
+        payload: newMessage,
+      },
+      {
+        headers: {
+          "x-internal-secret": process.env.INTERNAL_SOCKET_SECRET,
+        },
+      },
+    );
+
+    if (seenByUsers.length > 0) {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/emit`,
+        {
+          receiverId: senderId,
+          event: "messagesSeen",
+          payload: {
+            chatId,
+            messageIds: [newMessage._id],
+            seenByUsers,
+          },
+        },
+        {
+          headers: {
+            "x-internal-secret": process.env.INTERNAL_SOCKET_SECRET,
+          },
+        },
+      );
+    }
+  } catch (socketError) {
+    console.log("Socket emit failed:", socketError);
+  }
 
   return newMessage;
 };

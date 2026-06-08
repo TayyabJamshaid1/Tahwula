@@ -1,16 +1,23 @@
+import { SystemActions } from "@/lib/SystemActions";
 import mongoose, { Schema, Document, Types,model, models, SchemaType  } from "mongoose";
 
 export interface IMessage extends Document {
-  chatId: Types.ObjectId;
+   chatId: Types.ObjectId;
   sender: string;
   text?: string;
   image?: {
     url: string;
     publicId: string;
   };
-  messageType: "text" | "image";
-  seen: boolean;
-  seenAt?: Date;
+  messageType: "text" | "image" | "system";
+  seenBy: {
+    userId: string;
+    seenAt: Date;
+  }[];
+  system?: {
+    action: SystemActions;
+    text: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,17 +42,32 @@ const schema = new Schema<IMessage>(
     },
     messageType: {
       type: String,
-      enum: ["text", "image"],
+      enum: ["text", "image", "system"],
       default: "text",
     },
-    seen: {
-      type: Boolean,
-      default: false,
+   system: {
+      action: {
+        type: String,
+        enum: Object.values(SystemActions),
+      },
+      text: {
+        type: String,
+      },
     },
-    seenAt: {
-      type: Date,
-      default: null,
-    },
+
+    seenBy: [
+      {
+        userId: {
+          type: String,
+          required: true,
+        },
+
+        seenAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,
