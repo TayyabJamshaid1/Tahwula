@@ -116,7 +116,6 @@ export const useChatMutations = ({
       return await dispatch(sendMessageThunk(formData)).unwrap();
     },
     onSuccess: async (data) => {
-      toast.success(data.message);
       setMessages((prev) => {
         let currentMessages = prev ? [...prev] : [];
         let existMessage = currentMessages.some(
@@ -154,7 +153,6 @@ export const useChatMutations = ({
     },
 
     onSuccess: (data, variables) => {
-      toast.success(data.message || "Group renamed");
       variables.onSuccess?.();
     },
 
@@ -178,7 +176,6 @@ export const useChatMutations = ({
     },
 
     onSuccess: (data, variables) => {
-      toast.success(data.message || "Members added");
       variables.onSuccess?.();
     },
 
@@ -202,7 +199,6 @@ export const useChatMutations = ({
       },
 
       onSuccess: (data, variables) => {
-        toast.success(data.message || "Admin transferred");
         variables.onSuccess?.();
       },
 
@@ -217,7 +213,6 @@ export const useChatMutations = ({
     },
 
     onSuccess: (data, variables) => {
-      toast.success(data.message || "Left group");
       variables.onSuccess?.();
     },
 
@@ -241,8 +236,6 @@ export const useChatMutations = ({
       },
 
       onSuccess: (data, variables) => {
-        toast.success(data.message || "Member removed");
-
         variables.onSuccess?.();
       },
 
@@ -266,7 +259,6 @@ export const useChatMutations = ({
       },
 
       onSuccess: (data, variables) => {
-        toast.success(data.message || "Group image updated");
         variables.onSuccess?.();
       },
 
@@ -280,7 +272,6 @@ export const useChatMutations = ({
     },
 
     onSuccess: (data, variables) => {
-      toast.success(data.message || "Group deleted");
       variables.onSuccess?.();
     },
 

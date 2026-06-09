@@ -298,42 +298,74 @@ const ChatPageDesign = () => {
         setTypingUserName("");
       }
     };
-    const handleGroupUpdated = (data: any) => {
-      console.log("groupUpdated:", data);
+  const handleGroupUpdated = (data: any) => {
+  console.log("groupUpdated:", data);
 
-      queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
-        if (!prev) return prev;
+  queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
+    if (!prev) return prev;
 
-        return prev.map((chat: any) => {
-          if (chat.chat._id !== data.chatId) return chat;
+    return prev.map((chat: any) => {
+      if (chat.chat._id !== data.chatId) return chat;
 
-          return {
-            ...data.group,
-            chat: {
-              ...data.group.chat,
-              latestMessage: {
-                text: data.message,
-                sender: data.updatedBy,
-              },
-              updatedAt: new Date().toString(),
-            },
-          };
-        });
-      });
+      return {
+        ...data.group,
+        chat: {
+          ...data.group.chat,
+          latestMessage: {
+            text: data.message,
+            sender: data.updatedBy,
+          },
+          updatedAt: new Date().toString(),
+        },
+      };
+    });
+  });
 
-      if (selectedUser === data.chatId) {
-        setCurrentChatDetails({
-          _id: data.group.chat._id,
-          isGroupChat: true,
-          groupName: data.group.groupInfo?.groupName,
-          groupImage: data.group.groupInfo?.groupImage,
-          groupAdmin: data.group.groupInfo?.admin,
-          users: data.group.groupInfo?.members || [],
-        });
-      }
+  if (selectedUser === data.chatId) {
+    setCurrentChatDetails({
+      _id: data.group.chat._id,
+      isGroupChat: true,
+      groupName: data.group.groupInfo?.groupName,
+      groupImage: data.group.groupInfo?.groupImage,
+      groupAdmin: data.group.groupInfo?.admin,
+      users: data.group.groupInfo?.members || [],
+    });
 
-      toast.info(data.message || "Group updated");
-    };
+    setMessages((prev) => {
+      const currentMessages = prev || [];
+
+      const tempSystemId = `system-${data.chatId}-${data.action}-${data.updatedBy}-${Date.now()}`;
+
+      const alreadyExists = currentMessages.some(
+        (msg) =>
+          msg.messageType === "system" &&
+          msg.system?.action === data.action &&
+          msg.text === data.message,
+      );
+
+      if (alreadyExists) return currentMessages;
+
+      return [
+        ...currentMessages,
+        {
+          _id: tempSystemId,
+          chatId: data.chatId,
+          sender: data.updatedBy,
+          text: data.message,
+          messageType: "system",
+          system: {
+            action: data.action,
+            text: data.message,
+          },
+          seenBy: [],
+          createdAt: new Date().toISOString(),
+        },
+      ];
+    });
+  }
+
+  toast.info(data.message || "Group updated");
+};
     const handleRemovedFromGroup = (data: any) => {
       toast.error(data.message || "You were removed from the group");
 
