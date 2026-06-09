@@ -171,18 +171,30 @@ const ChatPageDesign = () => {
     if (!socket) return;
     const handleNewChat = (newChat: any) => {
       console.log("Received new chat via socket:", newChat);
-      toast.info(
-        `You have a new chat with ${newChat.user.name || newChat.user.email.split("@")[0]}`,
-      );
+
       queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
+        if (!prev) return [newChat];
+
         const chatExists = prev.some(
-          (chat: Chat) => chat.chat._id === newChat._id,
+          (chat: Chat) => chat.chat._id === newChat.chat._id,
         );
+
         if (chatExists) return prev;
-        return [...prev, newChat];
+
+        return [newChat, ...prev];
       });
 
-      moveChatToTop(newChat._id, newChat.chat.latestMessage, false);
+      if (newChat.chatType === "group") {
+        toast.info(
+          `You were added to ${newChat.groupInfo?.groupName || "a group"}`,
+        );
+      } else {
+        toast.info(
+          `You have a new chat with ${
+            newChat.user?.name || newChat.user?.email?.split("@")[0]
+          }`,
+        );
+      }
     };
     const handleNewMessage = (message: any) => {
       if (selectedUser == message.chatId) {
@@ -203,54 +215,54 @@ const ChatPageDesign = () => {
       }
     };
 
-  const MessagesSeen = (data: any) => {
-  if (selectedUser !== data?.chatId) return;
+    const MessagesSeen = (data: any) => {
+      if (selectedUser !== data?.chatId) return;
 
-  if (!Array.isArray(data.messageIds)) return;
+      if (!Array.isArray(data.messageIds)) return;
 
-  setMessages((prev) => {
-    if (!prev) return null;
+      setMessages((prev) => {
+        if (!prev) return null;
 
-    return prev.map((msg) => {
-      if (!data.messageIds.includes(msg._id)) return msg;
+        return prev.map((msg) => {
+          if (!data.messageIds.includes(msg._id)) return msg;
 
-      const usersToAdd = Array.isArray(data.seenByUsers)
-        ? data.seenByUsers
-        : data.seenBy
-          ? [
-              {
-                userId: data.seenBy,
-                seenAt: data.seenAt || new Date().toString(),
-              },
-            ]
-          : [];
+          const usersToAdd = Array.isArray(data.seenByUsers)
+            ? data.seenByUsers
+            : data.seenBy
+              ? [
+                  {
+                    userId: data.seenBy,
+                    seenAt: data.seenAt || new Date().toString(),
+                  },
+                ]
+              : [];
 
-      if (usersToAdd.length === 0) return msg;
+          if (usersToAdd.length === 0) return msg;
 
-      const newSeenBy = [...(msg.seenBy || [])];
+          const newSeenBy = [...(msg.seenBy || [])];
 
-      usersToAdd.forEach((seenUser: any) => {
-        if (!seenUser?.userId) return;
+          usersToAdd.forEach((seenUser: any) => {
+            if (!seenUser?.userId) return;
 
-        const alreadySeen = newSeenBy.some(
-          (s) => s.userId === seenUser.userId,
-        );
+            const alreadySeen = newSeenBy.some(
+              (s) => s.userId === seenUser.userId,
+            );
 
-        if (!alreadySeen) {
-          newSeenBy.push({
-            userId: seenUser.userId,
-            seenAt: seenUser.seenAt || new Date().toString(),
+            if (!alreadySeen) {
+              newSeenBy.push({
+                userId: seenUser.userId,
+                seenAt: seenUser.seenAt || new Date().toString(),
+              });
+            }
           });
-        }
-      });
 
-      return {
-        ...msg,
-        seenBy: newSeenBy,
-      };
-    });
-  });
-};
+          return {
+            ...msg,
+            seenBy: newSeenBy,
+          };
+        });
+      });
+    };
 
     const handleUserTyping = (data: any) => {
       if (data.chatId === selectedUser && data.userId !== userInfo?._id) {
@@ -436,14 +448,14 @@ const ChatPageDesign = () => {
 
             {/* Messages Area - Takes remaining space */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-            <ChatMessages
-  selectedUser={selectedUser}
-  loggedInUser={userInfo}
-  messages={messages}
-  messagesLoading={messagesLoading}
-  isGroupChat={currentChatDetails?.isGroupChat}
-  groupMembers={currentChatDetails?.users || []}
-/>
+              <ChatMessages
+                selectedUser={selectedUser}
+                loggedInUser={userInfo}
+                messages={messages}
+                messagesLoading={messagesLoading}
+                isGroupChat={currentChatDetails?.isGroupChat}
+                groupMembers={currentChatDetails?.users || []}
+              />
             </div>
 
             {/* Input Area - Fixed at bottom */}
