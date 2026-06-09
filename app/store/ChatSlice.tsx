@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User } from "./AuthSlice";
-import { createNewChat, FetchAllChats, MessagesByChatId, sendMessage } from "@/lib/ChatActions";
+import { createGroupChat, createNewChat, FetchAllChats, MessagesByChatId, sendMessage } from "@/lib/ChatActions";
 
 /*TYPES */
 export interface Message {
@@ -105,6 +105,7 @@ export const fetchChatMessagesThunk = createAsyncThunk(
     }
   },
 );
+
 export const sendMessageThunk = createAsyncThunk(
   "chat/sendMessage",
 
@@ -119,6 +120,34 @@ export const sendMessageThunk = createAsyncThunk(
       return response;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message || "Failed to create chat");
+    }
+  },
+);
+/** Group Chat Thunks */
+export const createGroupChatThunk = createAsyncThunk(
+  "chat/createGroupChat",
+  async (
+    payload: {
+      groupName: string;
+      members: string[];
+    },
+    thunkAPI,
+  ) => {
+    try {
+      const response = await createGroupChat(
+        payload.groupName,
+        payload.members,
+      );
+
+      if (!response.success) {
+        return thunkAPI.rejectWithValue(response.message);
+      }
+
+      return response;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.message || "Failed to create group",
+      );
     }
   },
 );

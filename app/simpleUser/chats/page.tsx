@@ -28,13 +28,15 @@ const ChatPageDesign = () => {
   const [showChatList, setShowChatList] = useState(false);
   const [messages, setMessages] = useState<Message[] | null>([]);
   const [user, setUser] = useState<User | null>(null);
-  const [currentChatDetails, setCurrentChatDetails] = useState<GroupDetails | null>(null);
+  const [currentChatDetails, setCurrentChatDetails] =
+    useState<GroupDetails | null>(null);
   const [showAllUser, setShowAllUser] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Custom hooks
-  const { users, allChats, isUsersLoading, isAllChatLoading } = useChatQuery(userInfo);
+  const { users, allChats, isUsersLoading, isAllChatLoading } =
+    useChatQuery(userInfo);
 
   const moveChatToTop = (
     chatId: string | null,
@@ -76,7 +78,10 @@ const ChatPageDesign = () => {
     sendMessage,
     isCreatingChat,
     messagesLoading,
-    isSendingMessage
+    createGroupChat,
+    isCreatingGroup,
+
+    isSendingMessage,
   } = useChatMutations({
     setSelectedUser,
     setShowAllUser,
@@ -166,7 +171,9 @@ const ChatPageDesign = () => {
     if (!socket) return;
     const handleNewChat = (newChat: any) => {
       console.log("Received new chat via socket:", newChat);
-      toast.info(`You have a new chat with ${newChat.user.name || newChat.user.email.split('@')[0]}`);
+      toast.info(
+        `You have a new chat with ${newChat.user.name || newChat.user.email.split("@")[0]}`,
+      );
       queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
         const chatExists = prev.some(
           (chat: Chat) => chat.chat._id === newChat._id,
@@ -306,7 +313,7 @@ const ChatPageDesign = () => {
         className={`fixed inset-y-0 left-0 z-40 w-80 bg-gray-900 border-r border-gray-700 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
           showChatList ? "translate-x-0" : "-translate-x-full"
         }`}
-        style={{  height: 'calc(100vh - 4rem)' }}
+        style={{ height: "calc(100vh - 4rem)" }}
       >
         <ChatSidebar
           showAllUsers={showAllUser}
@@ -318,6 +325,8 @@ const ChatPageDesign = () => {
           loggedInUser={userInfo}
           onlineUsers={onlineUsers}
           createChat={createChat}
+          createGroupChat={createGroupChat}
+          isCreatingGroup={isCreatingGroup}
           onCloseMobile={() => setShowChatList(false)}
         />
       </div>
@@ -326,7 +335,7 @@ const ChatPageDesign = () => {
       {showChatList && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          style={{ top: '4rem' }}
+          style={{ top: "4rem" }}
           onClick={() => setShowChatList(false)}
         />
       )}
@@ -346,11 +355,11 @@ const ChatPageDesign = () => {
           {selectedUser && (
             <div className="flex-1">
               <h3 className="font-semibold text-white">
-                { user?.name || user?.email?.split('@')[0]}
+                {user?.name || user?.email?.split("@")[0]}
               </h3>
               {!currentChatDetails?.isGroupChat && (
                 <p className="text-xs text-gray-400">
-                  {onlineUsers.includes(user?._id || '') ? 'Online' : 'Offline'}
+                  {onlineUsers.includes(user?._id || "") ? "Online" : "Offline"}
                 </p>
               )}
             </div>
@@ -361,12 +370,24 @@ const ChatPageDesign = () => {
           <div className="flex-1 flex items-center justify-center p-4">
             <div className="text-center">
               <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                <svg
+                  className="w-8 h-8 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
                 </svg>
               </div>
               <p className="text-gray-400">Select a conversation</p>
-              <p className="text-sm text-gray-500 mt-1">Choose a chat from the list to start messaging</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Choose a chat from the list to start messaging
+              </p>
             </div>
           </div>
         ) : (

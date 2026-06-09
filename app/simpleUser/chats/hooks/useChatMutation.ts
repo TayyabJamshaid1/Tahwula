@@ -1,7 +1,12 @@
 // hooks/useChatMutations.ts
 import { useMutation } from "@tanstack/react-query";
 import { useAppDispatch } from "@/app/store/hooks";
-import { createNewChatThunk, fetchChatMessagesThunk, sendMessageThunk } from "@/app/store/ChatSlice";
+import {
+  createGroupChatThunk,
+  createNewChatThunk,
+  fetchChatMessagesThunk,
+  sendMessageThunk,
+} from "@/app/store/ChatSlice";
 import { queryClient } from "@/components/Providers";
 import { toast } from "react-toastify";
 import { Dispatch, SetStateAction } from "react";
@@ -16,7 +21,11 @@ interface UseChatMutationsProps {
   message: string;
   selectedUser: string | null;
   userInfo: any;
-  moveChatToTop: (chatId: string | null, newMessage: any, updatedUnseenCount?: boolean) => void;
+  moveChatToTop: (
+    chatId: string | null,
+    newMessage: any,
+    updatedUnseenCount?: boolean,
+  ) => void;
 }
 
 export const useChatMutations = ({
@@ -46,7 +55,42 @@ export const useChatMutations = ({
       toast.error(error.message || "Failed to create chat");
     },
   });
+const { mutate: createGroupChatMutation, isPending: isCreatingGroup } =
+  useMutation({
+    mutationFn: async (payload: {
+      groupName: string;
+      members: string[];
+      onSuccess?: () => void;
+    }) => {
+      return await dispatch(
+        createGroupChatThunk({
+          groupName: payload.groupName,
+          members: payload.members,
+        }),
+      ).unwrap();
+    },
 
+    onSuccess: async (data, variables) => {
+      toast.success(data.message || "Group created");
+
+      queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
+        if (!prev) return [data.group];
+
+        const exists = prev.some(
+          (chat: any) => chat.chat._id === data.group.chat._id,
+        );
+
+        if (exists) return prev;
+
+        return [data.group, ...prev];
+      });
+
+      setSelectedUser(data.group.chat._id);
+      setShowAllUser(false);
+
+      variables.onSuccess?.();
+    },
+  });
   const { mutate: fetchMessages, isPending: messagesLoading } = useMutation({
     mutationFn: async (selectedUser: string) => {
       return await dispatch(fetchChatMessagesThunk(selectedUser)).unwrap();
@@ -105,6 +149,8 @@ export const useChatMutations = ({
     createNewChat: createChatHandler,
     fetchMessages: fetchMessagesHandler,
     sendMessage: sendMessageHandler,
+    createGroupChat: createGroupChatMutation,
+    isCreatingGroup,
     isCreatingChat,
     messagesLoading,
     isSendingMessage,

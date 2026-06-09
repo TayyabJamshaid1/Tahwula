@@ -100,3 +100,40 @@ export const sendMessage = async (
     };
   }
 };
+export const createGroupChat = async (
+  groupName: string,
+  members: string[],
+) => {
+  try {
+    const res = await fetch(`/api/chat/group/new`, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        groupName,
+        members,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!data?.success) {
+      return {
+        success: false,
+        message: data?.message,
+      };
+    }
+
+    return {
+      success: true,
+      message: data?.message,
+      group: data?.group,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: "Create group failed",
+    };
+  }
+};
