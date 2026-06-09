@@ -285,12 +285,13 @@ const ChatPageDesign = () => {
       if (chat) {
         setCurrentChatDetails({
           _id: chat.chat._id,
-          isGroupChat: chat.chat.isGroupChat,
-          groupName: chat.chat.groupName,
-          groupAdmin: chat.chat.groupAdmin,
-          users: chat.user ? [chat.user] : [],
+          isGroupChat: chat.chatType === "group",
+          groupName: chat.groupInfo?.groupName,
+          groupAdmin: chat.groupInfo?.admin,
+          users: chat.groupInfo?.members || [],
         });
-        setUser(chat.user);
+
+        setUser(chat.chatType === "single" ? chat.user : null);
       }
     }
   }, [selectedUser, allChats]);
@@ -355,9 +356,15 @@ const ChatPageDesign = () => {
           {selectedUser && (
             <div className="flex-1">
               <h3 className="font-semibold text-white">
-                {user?.name || user?.email?.split("@")[0]}
+                {currentChatDetails?.isGroupChat
+                  ? currentChatDetails.groupName
+                  : user?.name || user?.email?.split("@")[0]}
               </h3>
-              {!currentChatDetails?.isGroupChat && (
+              {currentChatDetails?.isGroupChat ? (
+                <p className="text-xs text-gray-400">
+                  {currentChatDetails.users?.length || 0} members
+                </p>
+              ) : (
                 <p className="text-xs text-gray-400">
                   {onlineUsers.includes(user?._id || "") ? "Online" : "Offline"}
                 </p>
@@ -401,17 +408,22 @@ const ChatPageDesign = () => {
                 onlineUsers={onlineUsers}
                 chatId={selectedUser}
                 loggedInUser={userInfo}
+                isGroupChat={currentChatDetails?.isGroupChat}
+                groupName={currentChatDetails?.groupName}
+                groupMembers={currentChatDetails?.users || []}
               />
             </div>
 
             {/* Messages Area - Takes remaining space */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <ChatMessages
-                selectedUser={selectedUser}
-                loggedInUser={userInfo}
-                messages={messages}
-                messagesLoading={messagesLoading}
-              />
+            <ChatMessages
+  selectedUser={selectedUser}
+  loggedInUser={userInfo}
+  messages={messages}
+  messagesLoading={messagesLoading}
+  isGroupChat={currentChatDetails?.isGroupChat}
+  groupMembers={currentChatDetails?.users || []}
+/>
             </div>
 
             {/* Input Area - Fixed at bottom */}
