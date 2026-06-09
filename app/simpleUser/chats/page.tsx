@@ -83,8 +83,15 @@ const ChatPageDesign = () => {
     messagesLoading,
     createGroupChat,
     isCreatingGroup,
-
+    renameGroup,
+    addGroupMembers,
+    leaveGroup,
+    isRenamingGroup,
+    isAddingMembers,
+    isLeavingGroup,
     isSendingMessage,
+    removeGroupMember,
+    isRemovingMember,
   } = useChatMutations({
     setSelectedUser,
     setShowAllUser,
@@ -560,7 +567,16 @@ const ChatPageDesign = () => {
           <GroupInfoModal
             currentChatDetails={currentChatDetails}
             loggedInUser={userInfo}
+            users={users?.users || []}
+            renameGroup={renameGroup}
+            addGroupMembers={addGroupMembers}
+            leaveGroup={leaveGroup}
+            isRenamingGroup={isRenamingGroup}
+            isAddingMembers={isAddingMembers}
+            isLeavingGroup={isLeavingGroup}
             onClose={() => setShowGroupInfo(false)}
+            removeGroupMember={removeGroupMember}
+            isRemovingMember={isRemovingMember}
           />
         )}
       </div>

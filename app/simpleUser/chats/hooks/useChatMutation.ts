@@ -2,9 +2,13 @@
 import { useMutation } from "@tanstack/react-query";
 import { useAppDispatch } from "@/app/store/hooks";
 import {
+  addMembersToGroupThunk,
   createGroupChatThunk,
   createNewChatThunk,
   fetchChatMessagesThunk,
+  leaveGroupChatThunk,
+  removeMemberFromGroupThunk,
+  renameGroupChatThunk,
   sendMessageThunk,
 } from "@/app/store/ChatSlice";
 import { queryClient } from "@/components/Providers";
@@ -55,42 +59,42 @@ export const useChatMutations = ({
       toast.error(error.message || "Failed to create chat");
     },
   });
-const { mutate: createGroupChatMutation, isPending: isCreatingGroup } =
-  useMutation({
-    mutationFn: async (payload: {
-      groupName: string;
-      members: string[];
-      onSuccess?: () => void;
-    }) => {
-      return await dispatch(
-        createGroupChatThunk({
-          groupName: payload.groupName,
-          members: payload.members,
-        }),
-      ).unwrap();
-    },
+  const { mutate: createGroupChatMutation, isPending: isCreatingGroup } =
+    useMutation({
+      mutationFn: async (payload: {
+        groupName: string;
+        members: string[];
+        onSuccess?: () => void;
+      }) => {
+        return await dispatch(
+          createGroupChatThunk({
+            groupName: payload.groupName,
+            members: payload.members,
+          }),
+        ).unwrap();
+      },
 
-    onSuccess: async (data, variables) => {
-      toast.success(data.message || "Group created");
+      onSuccess: async (data, variables) => {
+        toast.success(data.message || "Group created");
 
-      queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
-        if (!prev) return [data.group];
+        queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
+          if (!prev) return [data.group];
 
-        const exists = prev.some(
-          (chat: any) => chat.chat._id === data.group.chat._id,
-        );
+          const exists = prev.some(
+            (chat: any) => chat.chat._id === data.group.chat._id,
+          );
 
-        if (exists) return prev;
+          if (exists) return prev;
 
-        return [data.group, ...prev];
-      });
+          return [data.group, ...prev];
+        });
 
-      setSelectedUser(data.group.chat._id);
-      setShowAllUser(false);
+        setSelectedUser(data.group.chat._id);
+        setShowAllUser(false);
 
-      variables.onSuccess?.();
-    },
-  });
+        variables.onSuccess?.();
+      },
+    });
   const { mutate: fetchMessages, isPending: messagesLoading } = useMutation({
     mutationFn: async (selectedUser: string) => {
       return await dispatch(fetchChatMessagesThunk(selectedUser)).unwrap();
@@ -132,7 +136,100 @@ const { mutate: createGroupChatMutation, isPending: isCreatingGroup } =
       toast.error(error.message || "Failed to send message");
     },
   });
+  const { mutate: renameGroup, isPending: isRenamingGroup } = useMutation({
+    mutationFn: async (payload: {
+      chatId: string;
+      groupName: string;
+      onSuccess?: () => void;
+    }) => {
+      return await dispatch(
+        renameGroupChatThunk({
+          chatId: payload.chatId,
+          groupName: payload.groupName,
+        }),
+      ).unwrap();
+    },
 
+    onSuccess: (data, variables) => {
+      toast.success(data.message || "Group renamed");
+      variables.onSuccess?.();
+    },
+
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to rename group");
+    },
+  });
+
+  const { mutate: addGroupMembers, isPending: isAddingMembers } = useMutation({
+    mutationFn: async (payload: {
+      chatId: string;
+      members: string[];
+      onSuccess?: () => void;
+    }) => {
+      return await dispatch(
+        addMembersToGroupThunk({
+          chatId: payload.chatId,
+          members: payload.members,
+        }),
+      ).unwrap();
+    },
+
+    onSuccess: (data, variables) => {
+      toast.success(data.message || "Members added");
+      variables.onSuccess?.();
+    },
+
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to add members");
+    },
+  });
+
+  const { mutate: leaveGroup, isPending: isLeavingGroup } = useMutation({
+    mutationFn: async (payload: { chatId: string; onSuccess?: () => void }) => {
+      return await dispatch(leaveGroupChatThunk(payload.chatId)).unwrap();
+    },
+
+    onSuccess: (data, variables) => {
+      toast.success(data.message || "Left group");
+      variables.onSuccess?.();
+    },
+
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to leave group");
+    },
+  });
+  const {
+  mutate: removeGroupMember,
+  isPending: isRemovingMember,
+} = useMutation({
+  mutationFn: async (payload: {
+    chatId: string;
+    memberId: string;
+    onSuccess?: () => void;
+  }) => {
+    return await dispatch(
+      removeMemberFromGroupThunk({
+        chatId: payload.chatId,
+        memberId: payload.memberId,
+      }),
+    ).unwrap();
+  },
+
+  onSuccess: (data, variables) => {
+    toast.success(
+      data.message || "Member removed",
+    );
+
+    variables.onSuccess?.();
+  },
+
+  onError: (error: any) => {
+    toast.error(
+      error.message ||
+        "Failed to remove member",
+    );
+  },
+});
   const sendMessageHandler = (formData: FormData) => {
     sendMessage(formData);
   };
@@ -150,9 +247,17 @@ const { mutate: createGroupChatMutation, isPending: isCreatingGroup } =
     fetchMessages: fetchMessagesHandler,
     sendMessage: sendMessageHandler,
     createGroupChat: createGroupChatMutation,
+    renameGroup,
+    addGroupMembers,
+    leaveGroup,
     isCreatingGroup,
+    isRenamingGroup,
+    isAddingMembers,
+    isLeavingGroup,
     isCreatingChat,
     messagesLoading,
     isSendingMessage,
+    removeGroupMember,
+isRemovingMember,
   };
 };

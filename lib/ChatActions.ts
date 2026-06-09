@@ -137,3 +137,100 @@ export const createGroupChat = async (
     };
   }
 };
+export const renameGroupChat = async (chatId: string, groupName: string) => {
+  const res = await fetch(`/api/chat/group/rename/${chatId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify({ groupName }),
+  });
+
+  const data = await res.json();
+
+  if (!data?.success) {
+    return { success: false, message: data?.message };
+  }
+
+  return {
+    success: true,
+    message: data?.message,
+    group: data?.group,
+  };
+};
+
+export const addMembersToGroup = async (
+  chatId: string,
+  members: string[],
+) => {
+  const res = await fetch(`/api/chat/group/add-members/${chatId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify({ members }),
+  });
+
+  const data = await res.json();
+
+  if (!data?.success) {
+    return { success: false, message: data?.message };
+  }
+
+  return {
+    success: true,
+    message: data?.message,
+    group: data?.group,
+  };
+};
+
+export const leaveGroupChat = async (chatId: string) => {
+  const res = await fetch(`/api/chat/group/leave/${chatId}`, {
+    method: "PATCH",
+  });
+
+  const data = await res.json();
+
+  if (!data?.success) {
+    return { success: false, message: data?.message };
+  }
+
+  return {
+    success: true,
+    message: data?.message,
+    group: data?.group,
+    groupDeleted: data?.groupDeleted,
+  };
+};
+export const removeMemberFromGroup = async (
+  chatId: string,
+  memberId: string,
+) => {
+  const res = await fetch(
+    `/api/chat/group/remove-member/${chatId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        memberId,
+      }),
+    },
+  );
+
+  const data = await res.json();
+
+  if (!data?.success) {
+    return {
+      success: false,
+      message: data?.message,
+    };
+  }
+
+  return {
+    success: true,
+    message: data?.message,
+    group: data?.group,
+  };
+};

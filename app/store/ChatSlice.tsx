@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User } from "./AuthSlice";
-import { createGroupChat, createNewChat, FetchAllChats, MessagesByChatId, sendMessage } from "@/lib/ChatActions";
+import { addMembersToGroup, createGroupChat, createNewChat, FetchAllChats, leaveGroupChat, MessagesByChatId, removeMemberFromGroup, renameGroupChat, sendMessage } from "@/lib/ChatActions";
 
 /*TYPES */
 export interface Message {
@@ -153,6 +153,111 @@ export const createGroupChatThunk = createAsyncThunk(
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.message || "Failed to create group",
+      );
+    }
+  },
+);
+export const renameGroupChatThunk = createAsyncThunk(
+  "chat/renameGroupChat",
+  async (
+    payload: {
+      chatId: string;
+      groupName: string;
+    },
+    thunkAPI,
+  ) => {
+    try {
+      const response = await renameGroupChat(
+        payload.chatId,
+        payload.groupName,
+      );
+
+      if (!response.success) {
+        return thunkAPI.rejectWithValue(response.message);
+      }
+
+      return response;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.message || "Failed to rename group",
+      );
+    }
+  },
+);
+export const removeMemberFromGroupThunk = createAsyncThunk(
+  "chat/removeMemberFromGroup",
+
+  async (
+    payload: {
+      chatId: string;
+      memberId: string;
+    },
+    thunkAPI,
+  ) => {
+    try {
+      const response =
+        await removeMemberFromGroup(
+          payload.chatId,
+          payload.memberId,
+        );
+
+      if (!response.success) {
+        return thunkAPI.rejectWithValue(
+          response.message,
+        );
+      }
+
+      return response;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.message ||
+          "Failed to remove member",
+      );
+    }
+  },
+);
+export const addMembersToGroupThunk = createAsyncThunk(
+  "chat/addMembersToGroup",
+  async (
+    payload: {
+      chatId: string;
+      members: string[];
+    },
+    thunkAPI,
+  ) => {
+    try {
+      const response = await addMembersToGroup(
+        payload.chatId,
+        payload.members,
+      );
+
+      if (!response.success) {
+        return thunkAPI.rejectWithValue(response.message);
+      }
+
+      return response;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.message || "Failed to add members",
+      );
+    }
+  },
+);
+
+export const leaveGroupChatThunk = createAsyncThunk(
+  "chat/leaveGroupChat",
+  async (chatId: string, thunkAPI) => {
+    try {
+      const response = await leaveGroupChat(chatId);
+
+      if (!response.success) {
+        return thunkAPI.rejectWithValue(response.message);
+      }
+
+      return response;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.message || "Failed to leave group",
       );
     }
   },
