@@ -203,34 +203,54 @@ const ChatPageDesign = () => {
       }
     };
 
-    const MessagesSeen = (data: any) => {
-      if (selectedUser === data?.chatId) {
-        setMessages((prev) => {
-          if (!prev) return null;
-          return prev.map((msg) => {
-            if (
-              msg.sender == userInfo?._id &&
-              data?.messageIds &&
-              data.messageIds.includes(msg._id)
-            ) {
-              return {
-                ...msg,
-                seen: true,
-                seenAt: new Date().toString(),
-              };
-            } else if (msg.sender == userInfo?._id && !data?.messageIds) {
-              return {
-                ...msg,
-                seen: true,
-                seenAt: new Date().toString(),
-              };
-            } else {
-              return msg;
-            }
+  const MessagesSeen = (data: any) => {
+  if (selectedUser !== data?.chatId) return;
+
+  if (!Array.isArray(data.messageIds)) return;
+
+  setMessages((prev) => {
+    if (!prev) return null;
+
+    return prev.map((msg) => {
+      if (!data.messageIds.includes(msg._id)) return msg;
+
+      const usersToAdd = Array.isArray(data.seenByUsers)
+        ? data.seenByUsers
+        : data.seenBy
+          ? [
+              {
+                userId: data.seenBy,
+                seenAt: data.seenAt || new Date().toString(),
+              },
+            ]
+          : [];
+
+      if (usersToAdd.length === 0) return msg;
+
+      const newSeenBy = [...(msg.seenBy || [])];
+
+      usersToAdd.forEach((seenUser: any) => {
+        if (!seenUser?.userId) return;
+
+        const alreadySeen = newSeenBy.some(
+          (s) => s.userId === seenUser.userId,
+        );
+
+        if (!alreadySeen) {
+          newSeenBy.push({
+            userId: seenUser.userId,
+            seenAt: seenUser.seenAt || new Date().toString(),
           });
-        });
-      }
-    };
+        }
+      });
+
+      return {
+        ...msg,
+        seenBy: newSeenBy,
+      };
+    });
+  });
+};
 
     const handleUserTyping = (data: any) => {
       if (data.chatId === selectedUser && data.userId !== userInfo?._id) {

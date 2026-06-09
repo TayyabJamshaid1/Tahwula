@@ -24,14 +24,14 @@ const ChatMessages = ({
   groupMembers = [],
 }: ChatMessagesProps) => {
   const bottomRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [selectedUser, messages]);
 
   const getSenderName = (senderId: string) => {
     if (!isGroupChat) return null;
-    const sender = groupMembers.find(m => m._id === senderId);
+    const sender = groupMembers.find((m) => m._id === senderId);
     return sender?.name || "Unknown User";
   };
 
@@ -46,7 +46,7 @@ const ChatMessages = ({
       </div>
     );
   }
-  
+
   if (messagesLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -65,7 +65,15 @@ const ChatMessages = ({
           const isSentByMe = message.sender === loggedInUser?._id;
           const senderName = getSenderName(message.sender);
           const uniqueKey = `${message._id}-${index}`;
-          
+          if (message.messageType === "system") {
+            return (
+              <div key={message._id} className="flex justify-center my-3">
+                <span className="text-xs text-gray-300 bg-gray-800 px-3 py-1 rounded-full border border-gray-700">
+                  {message.system?.text || message.text}
+                </span>
+              </div>
+            );
+          }
           return (
             <div
               key={uniqueKey}
@@ -90,7 +98,11 @@ const ChatMessages = ({
                     className="max-w-full h-auto rounded-lg max-h-64 object-cover"
                   />
                 )}
-                {message.text && <p className="text-sm sm:text-base break-words">{message.text}</p>}
+                {message.text && (
+                  <p className="text-sm sm:text-base break-words">
+                    {message.text}
+                  </p>
+                )}
               </div>
               <div
                 className={`flex items-center gap-1 text-xs text-gray-400 ${
@@ -100,15 +112,37 @@ const ChatMessages = ({
                 <span>{moment(message.createdAt).format("hh:mm A")}</span>
                 {isSentByMe && (
                   <div className="flex items-center ml-1">
-                    {message.seen ? (
+                    {message.seenBy?.some(
+                      (s) => s.userId !== loggedInUser?._id,
+                    ) ? (
                       <div className="flex items-center gap-1 text-blue-400">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                       </div>
                     ) : (
-                      <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-3 h-3 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     )}
                   </div>
@@ -120,12 +154,24 @@ const ChatMessages = ({
       ) : (
         <div className="flex flex-col items-center justify-center h-full text-center">
           <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center mb-3">
-            <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            <svg
+              className="w-6 h-6 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
             </svg>
           </div>
           <p className="text-gray-400 text-sm">No messages yet</p>
-          <p className="text-xs text-gray-500 mt-1">Send a message to start the conversation</p>
+          <p className="text-xs text-gray-500 mt-1">
+            Send a message to start the conversation
+          </p>
         </div>
       )}
       <div ref={bottomRef} />

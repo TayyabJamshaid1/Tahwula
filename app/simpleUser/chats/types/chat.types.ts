@@ -9,9 +9,15 @@ export interface Message {
     url: string;
     publicId: string;
   };
-  messageType: "text" | "image";
-  seen: boolean;
-  seenAt?: string;
+  messageType: "text" | "image" | "system";
+  seenBy?: {
+    userId: string;
+    seenAt: string;
+  }[];
+  system?: {
+    action: string;
+    text: string;
+  };
   createdAt: string;
 }
 
@@ -37,20 +43,6 @@ export interface Chat {
     updatedAt: string;
   };
   user: User;
-}
-export interface Message {
-  _id: string;
-  chatId: string;
-  sender: string;
-  text?: string;
-  image?: {
-    url: string;
-    publicId: string;
-  };
-  messageType: "text" | "image";
-  seen: boolean;
-  seenAt?: string;
-  createdAt: string;
 }
 
 export interface GroupDetails {
