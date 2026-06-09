@@ -217,7 +217,7 @@ const ChatPageDesign = () => {
     };
     const handleNewMessage = (message: any) => {
       console.log(message);
-      
+
       if (selectedUser == message.chatId) {
         setMessages((prev) => {
           if (!prev || prev.length == 0) return [message];
@@ -298,74 +298,74 @@ const ChatPageDesign = () => {
         setTypingUserName("");
       }
     };
-  const handleGroupUpdated = (data: any) => {
-  console.log("groupUpdated:", data);
+    const handleGroupUpdated = (data: any) => {
+      console.log("groupUpdated:", data);
 
-  queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
-    if (!prev) return prev;
+      queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
+        if (!prev) return prev;
 
-    return prev.map((chat: any) => {
-      if (chat.chat._id !== data.chatId) return chat;
+        return prev.map((chat: any) => {
+          if (chat.chat._id !== data.chatId) return chat;
 
-      return {
-        ...data.group,
-        chat: {
-          ...data.group.chat,
-          latestMessage: {
-            text: data.message,
-            sender: data.updatedBy,
-          },
-          updatedAt: new Date().toString(),
-        },
-      };
-    });
-  });
+          return {
+            ...data.group,
+            chat: {
+              ...data.group.chat,
+              latestMessage: {
+                text: data.message,
+                sender: data.updatedBy,
+              },
+              updatedAt: new Date().toString(),
+            },
+          };
+        });
+      });
 
-  if (selectedUser === data.chatId) {
-    setCurrentChatDetails({
-      _id: data.group.chat._id,
-      isGroupChat: true,
-      groupName: data.group.groupInfo?.groupName,
-      groupImage: data.group.groupInfo?.groupImage,
-      groupAdmin: data.group.groupInfo?.admin,
-      users: data.group.groupInfo?.members || [],
-    });
+      if (selectedUser === data.chatId) {
+        setCurrentChatDetails({
+          _id: data.group.chat._id,
+          isGroupChat: true,
+          groupName: data.group.groupInfo?.groupName,
+          groupImage: data.group.groupInfo?.groupImage,
+          groupAdmin: data.group.groupInfo?.admin,
+          users: data.group.groupInfo?.members || [],
+        });
 
-    setMessages((prev) => {
-      const currentMessages = prev || [];
+        setMessages((prev) => {
+          const currentMessages = prev || [];
 
-      const tempSystemId = `system-${data.chatId}-${data.action}-${data.updatedBy}-${Date.now()}`;
+          const tempSystemId = `system-${data.chatId}-${data.action}-${data.updatedBy}-${Date.now()}`;
 
-      const alreadyExists = currentMessages.some(
-        (msg) =>
-          msg.messageType === "system" &&
-          msg.system?.action === data.action &&
-          msg.text === data.message,
-      );
+          const alreadyExists = currentMessages.some(
+            (msg) =>
+              msg.messageType === "system" &&
+              msg.system?.action === data.action &&
+              msg.text === data.message,
+          );
 
-      if (alreadyExists) return currentMessages;
+          if (alreadyExists) return currentMessages;
 
-      return [
-        ...currentMessages,
-        {
-          _id: tempSystemId,
-          chatId: data.chatId,
-          sender: data.updatedBy,
-          text: data.message,
-          messageType: "system",
-          system: {
-            action: data.action,
-            text: data.message,
-          },
-          seenBy: [],
-          createdAt: new Date().toISOString(),
-        },
-      ];
-    });
-  }
+          return [
+            ...currentMessages,
+            {
+              _id: tempSystemId,
+              chatId: data.chatId,
+              sender: data.updatedBy,
+              text: data.message,
+              messageType: "system",
+              system: {
+                action: data.action,
+                text: data.message,
+              },
+              seenBy: [],
+              createdAt: new Date().toISOString(),
+            },
+          ];
+        });
+      }
 
-  toast.info(data.message || "Group updated");
-};
+      toast.info(data.message || "Group updated");
+    };
     const handleRemovedFromGroup = (data: any) => {
       toast.error(data.message || "You were removed from the group");
 
@@ -474,10 +474,15 @@ const ChatPageDesign = () => {
     <div className="h-[calc(100vh-4rem)] flex overflow-hidden">
       {/* Chat List Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-80 bg-gray-900 border-r border-gray-700 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
-          showChatList ? "translate-x-0" : "-translate-x-full"
-        }`}
-        style={{ height: "calc(100vh - 4rem)" }}
+        className={`fixed inset-y-0 left-0 z-40
+ w-full sm:w-80
+ bg-gray-900
+ border-r border-gray-700
+ transform transition-transform
+ duration-300 ease-in-out
+ lg:relative lg:translate-x-0
+ ${showChatList ? "translate-x-0" : "-translate-x-full"}
+`}
       >
         <ChatSidebar
           showAllUsers={showAllUser}
@@ -508,34 +513,44 @@ const ChatPageDesign = () => {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile header with menu button */}
         <div className="lg:hidden flex items-center gap-3 p-4 border-b border-gray-700 bg-gray-900 sticky top-0 z-10">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowChatList(true)}
-            className="text-white hover:bg-gray-800"
+          <div
+            className="flex-1 cursor-pointer"
+            onClick={() => {
+              if (currentChatDetails?.isGroupChat) {
+                setShowGroupInfo(true);
+              }
+            }}
           >
-            <Menu className="h-5 w-5" />
-          </Button>
-          {selectedUser && (
-            <div className="flex-1">
-              <h3 className="font-semibold text-white">
-                {currentChatDetails?.isGroupChat
-                  ? currentChatDetails.groupName
-                  : user?.name || user?.email?.split("@")[0]}
-              </h3>
-              {currentChatDetails?.isGroupChat ? (
-                <p className="text-xs text-gray-400">
-                  {currentChatDetails.users?.length || 0} members
-                </p>
-              ) : (
-                <p className="text-xs text-gray-400">
-                  {onlineUsers.includes(user?._id || "") ? "Online" : "Offline"}
-                </p>
-              )}
-            </div>
-          )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowChatList(true)}
+              className="text-white hover:bg-gray-800"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            {selectedUser && (
+              <div className="flex-1">
+                <h3 className="font-semibold text-white">
+                  {currentChatDetails?.isGroupChat
+                    ? currentChatDetails.groupName
+                    : user?.name || user?.email?.split("@")[0]}
+                </h3>
+                {currentChatDetails?.isGroupChat ? (
+                  <p className="text-xs text-gray-400">
+                    {currentChatDetails.users?.length || 0} members
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-400">
+                    {onlineUsers.includes(user?._id || "")
+                      ? "Online"
+                      : "Offline"}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-
         {!selectedUser ? (
           <div className="flex-1 flex items-center justify-center p-4">
             <div className="text-center">
