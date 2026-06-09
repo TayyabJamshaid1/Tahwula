@@ -5,6 +5,7 @@ import { Crown, UserCircle, Users, X, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import ConfirmationRemovalChatBox from "./ConfirmationRemovalChatBox";
+import GroupActionConfirmModal from "./ConfirmationRemovalChatBox";
 
 interface GroupInfoModalProps {
   currentChatDetails: any;
@@ -36,10 +37,19 @@ interface GroupInfoModalProps {
 
   isRemovingMember: boolean;
   onClose: () => void;
+  transferAdmin: (payload: {
+    chatId: string;
+    newAdminId: string;
+    onSuccess?: () => void;
+  }) => void;
+
+  isTransferringAdmin: boolean;
 }
 
 const GroupInfoModal = ({
   currentChatDetails,
+  transferAdmin,
+  isTransferringAdmin,
   loggedInUser,
   users,
   removeGroupMember,
@@ -63,7 +73,7 @@ const GroupInfoModal = ({
   const [newGroupName, setNewGroupName] = useState(
     currentChatDetails.groupName || "",
   );
-
+  const [memberToMakeAdmin, setMemberToMakeAdmin] = useState<User | null>(null);
   const [showAddMembers, setShowAddMembers] = useState(false);
   const [selectedNewMembers, setSelectedNewMembers] = useState<string[]>([]);
 
@@ -273,18 +283,34 @@ const GroupInfoModal = ({
                     </div>
                   </div>
 
-                  {isAdmin && (
-                    <div className="flex items-center gap-1 text-yellow-400 text-xs">
-                      <Crown className="w-4 h-4" />
-                      Admin
-                    </div>
-                  )}
-                  <button
-                    onClick={() => setMemberToRemove(member)}
-                    className="text-red-400 text-xs ml-2"
-                  >
-                    Remove
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {isAdmin && (
+                      <div className="flex items-center gap-1 text-yellow-400 text-xs">
+                        <Crown className="w-4 h-4" />
+                        Admin
+                      </div>
+                    )}
+
+                    {isLoggedInUserAdmin && !isAdmin && !isMe && (
+                      <>
+                        <button
+                          onClick={() => setMemberToMakeAdmin(member)}
+                          disabled={isTransferringAdmin}
+                          className="text-yellow-400 text-xs hover:underline disabled:opacity-50"
+                        >
+                          Make Admin
+                        </button>
+
+                        <button
+                          onClick={() => setMemberToRemove(member)}
+                          disabled={isRemovingMember}
+                          className="text-red-400 text-xs hover:underline disabled:opacity-50"
+                        >
+                          Remove
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -299,15 +325,46 @@ const GroupInfoModal = ({
           {isLeavingGroup ? "Leaving..." : "Leave Group"}
         </button>
       </div>
-      {memberToRemove && (
-        <ConfirmationRemovalChatBox
-          memberToRemove={memberToRemove}
-          isRemovingMember={isRemovingMember}
-          removeGroupMember={removeGroupMember}
-          currentChatDetails={currentChatDetails}
-          setMemberToRemove={setMemberToRemove}
-        />
-      )}
+      <GroupActionConfirmModal
+        open={!!memberToRemove}
+        title="Remove Member"
+        description={`Remove ${memberToRemove?.name} from group?`}
+        confirmText="Remove"
+        isLoading={isRemovingMember}
+        onCancel={() => setMemberToRemove(null)}
+        onConfirm={() => {
+          if (!memberToRemove) return;
+
+          removeGroupMember({
+            chatId: currentChatDetails._id,
+            memberId: memberToRemove._id,
+            onSuccess: () => {
+              setMemberToRemove(null);
+            },
+          });
+        }}
+      />
+
+      <GroupActionConfirmModal
+        open={!!memberToMakeAdmin}
+        title="Transfer Admin"
+        description={`Make ${memberToMakeAdmin?.name} the group admin?`}
+        confirmText="Transfer"
+        confirmClassName="bg-yellow-600 hover:bg-yellow-700"
+        isLoading={isTransferringAdmin}
+        onCancel={() => setMemberToMakeAdmin(null)}
+        onConfirm={() => {
+          if (!memberToMakeAdmin) return;
+
+          transferAdmin({
+            chatId: currentChatDetails._id,
+            newAdminId: memberToMakeAdmin._id,
+            onSuccess: () => {
+              setMemberToMakeAdmin(null);
+            },
+          });
+        }}
+      />
     </div>
   );
 };

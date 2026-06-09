@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User } from "./AuthSlice";
-import { addMembersToGroup, createGroupChat, createNewChat, FetchAllChats, leaveGroupChat, MessagesByChatId, removeMemberFromGroup, renameGroupChat, sendMessage } from "@/lib/ChatActions";
+import { addMembersToGroup, createGroupChat, createNewChat, FetchAllChats, leaveGroupChat, MessagesByChatId, removeMemberFromGroup, renameGroupChat, sendMessage, transferGroupAdmin } from "@/lib/ChatActions";
 
 /*TYPES */
 export interface Message {
@@ -212,6 +212,33 @@ export const removeMemberFromGroupThunk = createAsyncThunk(
       return thunkAPI.rejectWithValue(
         error.message ||
           "Failed to remove member",
+      );
+    }
+  },
+);
+export const transferGroupAdminThunk = createAsyncThunk(
+  "chat/transferGroupAdmin",
+  async (
+    payload: {
+      chatId: string;
+      newAdminId: string;
+    },
+    thunkAPI,
+  ) => {
+    try {
+      const response = await transferGroupAdmin(
+        payload.chatId,
+        payload.newAdminId,
+      );
+
+      if (!response.success) {
+        return thunkAPI.rejectWithValue(response.message);
+      }
+
+      return response;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.message || "Failed to transfer admin",
       );
     }
   },

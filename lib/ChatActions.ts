@@ -234,3 +234,35 @@ export const removeMemberFromGroup = async (
     group: data?.group,
   };
 };
+export const transferGroupAdmin = async (
+  chatId: string,
+  newAdminId: string,
+) => {
+  const res = await fetch(
+    `/api/chat/group/transfer-admin/${chatId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        newAdminId,
+      }),
+    },
+  );
+
+  const data = await res.json();
+
+  if (!data?.success) {
+    return {
+      success: false,
+      message: data?.message,
+    };
+  }
+
+  return {
+    success: true,
+    message: data?.message,
+    group: data?.group,
+  };
+};

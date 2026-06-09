@@ -92,6 +92,8 @@ const ChatPageDesign = () => {
     isSendingMessage,
     removeGroupMember,
     isRemovingMember,
+    transferAdmin,
+    isTransferringAdmin,
   } = useChatMutations({
     setSelectedUser,
     setShowAllUser,
@@ -577,6 +579,8 @@ const ChatPageDesign = () => {
             onClose={() => setShowGroupInfo(false)}
             removeGroupMember={removeGroupMember}
             isRemovingMember={isRemovingMember}
+            transferAdmin={transferAdmin}
+isTransferringAdmin={isTransferringAdmin}
           />
         )}
       </div>

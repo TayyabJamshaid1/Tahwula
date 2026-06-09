@@ -10,6 +10,7 @@ import {
   removeMemberFromGroupThunk,
   renameGroupChatThunk,
   sendMessageThunk,
+  transferGroupAdminThunk,
 } from "@/app/store/ChatSlice";
 import { queryClient } from "@/components/Providers";
 import { toast } from "react-toastify";
@@ -183,7 +184,31 @@ export const useChatMutations = ({
       toast.error(error.message || "Failed to add members");
     },
   });
+  const { mutate: transferAdmin, isPending: isTransferringAdmin } = useMutation(
+    {
+      mutationFn: async (payload: {
+        chatId: string;
+        newAdminId: string;
+        onSuccess?: () => void;
+      }) => {
+        return await dispatch(
+          transferGroupAdminThunk({
+            chatId: payload.chatId,
+            newAdminId: payload.newAdminId,
+          }),
+        ).unwrap();
+      },
 
+      onSuccess: (data, variables) => {
+        toast.success(data.message || "Admin transferred");
+        variables.onSuccess?.();
+      },
+
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to transfer admin");
+      },
+    },
+  );
   const { mutate: leaveGroup, isPending: isLeavingGroup } = useMutation({
     mutationFn: async (payload: { chatId: string; onSuccess?: () => void }) => {
       return await dispatch(leaveGroupChatThunk(payload.chatId)).unwrap();
@@ -198,38 +223,31 @@ export const useChatMutations = ({
       toast.error(error.message || "Failed to leave group");
     },
   });
-  const {
-  mutate: removeGroupMember,
-  isPending: isRemovingMember,
-} = useMutation({
-  mutationFn: async (payload: {
-    chatId: string;
-    memberId: string;
-    onSuccess?: () => void;
-  }) => {
-    return await dispatch(
-      removeMemberFromGroupThunk({
-        chatId: payload.chatId,
-        memberId: payload.memberId,
-      }),
-    ).unwrap();
-  },
+  const { mutate: removeGroupMember, isPending: isRemovingMember } =
+    useMutation({
+      mutationFn: async (payload: {
+        chatId: string;
+        memberId: string;
+        onSuccess?: () => void;
+      }) => {
+        return await dispatch(
+          removeMemberFromGroupThunk({
+            chatId: payload.chatId,
+            memberId: payload.memberId,
+          }),
+        ).unwrap();
+      },
 
-  onSuccess: (data, variables) => {
-    toast.success(
-      data.message || "Member removed",
-    );
+      onSuccess: (data, variables) => {
+        toast.success(data.message || "Member removed");
 
-    variables.onSuccess?.();
-  },
+        variables.onSuccess?.();
+      },
 
-  onError: (error: any) => {
-    toast.error(
-      error.message ||
-        "Failed to remove member",
-    );
-  },
-});
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to remove member");
+      },
+    });
   const sendMessageHandler = (formData: FormData) => {
     sendMessage(formData);
   };
@@ -255,9 +273,11 @@ export const useChatMutations = ({
     isAddingMembers,
     isLeavingGroup,
     isCreatingChat,
+    transferAdmin,
+    isTransferringAdmin,
     messagesLoading,
     isSendingMessage,
     removeGroupMember,
-isRemovingMember,
+    isRemovingMember,
   };
 };
