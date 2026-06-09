@@ -15,6 +15,7 @@ interface ChatHeaderProps {
   groupMembers?: User[];
   chatId?: string | null;
   loggedInUser?: User | null;
+  typingUserName?: string;
 }
 
 const ChatHeader = ({
@@ -22,6 +23,7 @@ const ChatHeader = ({
   isTyping,
   onlineUsers,
   isGroupChat = false,
+  typingUserName = "",
   groupName,
   groupMembers = [],
   loggedInUser,
@@ -81,9 +83,15 @@ const ChatHeader = ({
           </div>
 
           {isGroupChat ? (
-            <div className="text-xs text-gray-400">
-              <span>{getOnlineMembersCount()} online</span>
-            </div>
+            isTyping ? (
+              <div className="text-xs text-blue-500">
+                {typingUserName} is typing...
+              </div>
+            ) : (
+              <div className="text-xs text-gray-400">
+                <span>{getOnlineMembersCount()} online</span>
+              </div>
+            )
           ) : isTyping ? (
             <div className="flex items-center gap-2">
               <div className="flex gap-1">

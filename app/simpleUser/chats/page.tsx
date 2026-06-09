@@ -22,6 +22,7 @@ const ChatPageDesign = () => {
   const { onlineUsers, socket } = SocketData();
 
   // State declarations
+  const [typingUserName, setTypingUserName] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [message, setMessage] = useState("");
@@ -125,6 +126,7 @@ const ChatPageDesign = () => {
 
     socket?.emit("stopTyping", {
       userId: userInfo?._id,
+      userName: userInfo?.name || userInfo?.email?.split("@")[0],
       chatId: selectedUser,
     });
 
@@ -145,6 +147,7 @@ const ChatPageDesign = () => {
     if (value.trim()) {
       socket.emit("typing", {
         userId: userInfo?._id,
+        userName: userInfo?.name || userInfo?.email?.split("@")[0],
         chatId: selectedUser,
       });
     }
@@ -156,6 +159,7 @@ const ChatPageDesign = () => {
     typingTimeoutRef.current = setTimeout(() => {
       socket.emit("stopTyping", {
         userId: userInfo?._id,
+        userName: userInfo?.name || userInfo?.email?.split("@")[0],
         chatId: selectedUser,
       });
     }, 2000);
@@ -267,14 +271,86 @@ const ChatPageDesign = () => {
     const handleUserTyping = (data: any) => {
       if (data.chatId === selectedUser && data.userId !== userInfo?._id) {
         setIsTyping(true);
+        setTypingUserName(data.userName || "Someone");
       }
     };
 
     const handleUserStopTyping = (data: any) => {
       if (data.chatId === selectedUser && data.userId !== userInfo?._id) {
         setIsTyping(false);
+        setTypingUserName("");
       }
     };
+    const handleGroupUpdated = (data: any) => {
+      console.log("groupUpdated:", data);
+
+      queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
+        if (!prev) return prev;
+
+        return prev.map((chat: any) => {
+          if (chat.chat._id !== data.chatId) return chat;
+
+          return {
+            ...data.group,
+            chat: {
+              ...data.group.chat,
+              latestMessage: {
+                text: data.message,
+                sender: data.updatedBy,
+              },
+              updatedAt: new Date().toString(),
+            },
+          };
+        });
+      });
+
+      if (selectedUser === data.chatId) {
+        setCurrentChatDetails({
+          _id: data.group.chat._id,
+          isGroupChat: true,
+          groupName: data.group.groupInfo?.groupName,
+          groupAdmin: data.group.groupInfo?.admin,
+          users: data.group.groupInfo?.members || [],
+        });
+      }
+
+      toast.info(data.message || "Group updated");
+    };
+    const handleRemovedFromGroup = (data: any) => {
+      toast.error(data.message || "You were removed from the group");
+
+      queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
+        if (!prev) return prev;
+
+        return prev.filter((chat: any) => chat.chat._id !== data.chatId);
+      });
+
+      if (selectedUser === data.chatId) {
+        setSelectedUser(null);
+        setCurrentChatDetails(null);
+        setMessages([]);
+        setUser(null);
+      }
+    };
+    const handleGroupDeleted = (data: any) => {
+      toast.error(data.message || "Group deleted");
+
+      queryClient.setQueryData(["fetchAllChats"], (prev: any) => {
+        if (!prev) return prev;
+
+        return prev.filter((chat: any) => chat.chat._id !== data.chatId);
+      });
+
+      if (selectedUser === data.chatId) {
+        setSelectedUser(null);
+        setCurrentChatDetails(null);
+        setMessages([]);
+        setUser(null);
+      }
+    };
+    socket.on("groupUpdated", handleGroupUpdated);
+    socket.on("removedFromGroup", handleRemovedFromGroup);
+    socket.on("groupDeleted", handleGroupDeleted);
     socket.on("newChat", handleNewChat);
     socket.on("newMessage", handleNewMessage);
     socket.on("messagesSeen", MessagesSeen);
@@ -282,11 +358,14 @@ const ChatPageDesign = () => {
     socket.on("userStopTyping", handleUserStopTyping);
 
     return () => {
+      socket.off("removedFromGroup", handleRemovedFromGroup);
+      socket.off("groupDeleted", handleGroupDeleted);
       socket.off("newChat", handleNewChat);
       socket.off("newMessage", handleNewMessage);
       socket.off("messagesSeen", MessagesSeen);
       socket.off("userTyping", handleUserTyping);
       socket.off("userStopTyping", handleUserStopTyping);
+      socket.off("groupUpdated", handleGroupUpdated);
     };
   }, [socket, selectedUser, userInfo?._id]);
 
@@ -294,6 +373,7 @@ const ChatPageDesign = () => {
     if (selectedUser) {
       setIsTyping(false);
       fetchMessages(selectedUser);
+      setTypingUserName("");
       resetUnseenCount(selectedUser);
       socket?.emit("joinChat", selectedUser);
       return () => {
@@ -436,6 +516,7 @@ const ChatPageDesign = () => {
               <ChatHeader
                 user={user}
                 isTyping={isTyping}
+                typingUserName={typingUserName}
                 setSidebarOpen={() => {}}
                 onlineUsers={onlineUsers}
                 chatId={selectedUser}
