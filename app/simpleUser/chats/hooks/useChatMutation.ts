@@ -5,12 +5,14 @@ import {
   addMembersToGroupThunk,
   createGroupChatThunk,
   createNewChatThunk,
+  deleteGroupChatThunk,
   fetchChatMessagesThunk,
   leaveGroupChatThunk,
   removeMemberFromGroupThunk,
   renameGroupChatThunk,
   sendMessageThunk,
   transferGroupAdminThunk,
+  updateGroupImageThunk,
 } from "@/app/store/ChatSlice";
 import { queryClient } from "@/components/Providers";
 import { toast } from "react-toastify";
@@ -248,6 +250,44 @@ export const useChatMutations = ({
         toast.error(error.message || "Failed to remove member");
       },
     });
+  const { mutate: updateGroupImageMutation, isPending: isUpdatingGroupImage } =
+    useMutation({
+      mutationFn: async (payload: {
+        chatId: string;
+        image: File;
+        onSuccess?: () => void;
+      }) => {
+        return await dispatch(
+          updateGroupImageThunk({
+            chatId: payload.chatId,
+            image: payload.image,
+          }),
+        ).unwrap();
+      },
+
+      onSuccess: (data, variables) => {
+        toast.success(data.message || "Group image updated");
+        variables.onSuccess?.();
+      },
+
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to update group image");
+      },
+    });
+  const { mutate: deleteGroup, isPending: isDeletingGroup } = useMutation({
+    mutationFn: async (payload: { chatId: string; onSuccess?: () => void }) => {
+      return await dispatch(deleteGroupChatThunk(payload.chatId)).unwrap();
+    },
+
+    onSuccess: (data, variables) => {
+      toast.success(data.message || "Group deleted");
+      variables.onSuccess?.();
+    },
+
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete group");
+    },
+  });
   const sendMessageHandler = (formData: FormData) => {
     sendMessage(formData);
   };
@@ -268,6 +308,10 @@ export const useChatMutations = ({
     renameGroup,
     addGroupMembers,
     leaveGroup,
+    updateGroupImage: updateGroupImageMutation,
+    deleteGroup,
+    isDeletingGroup,
+    isUpdatingGroupImage,
     isCreatingGroup,
     isRenamingGroup,
     isAddingMembers,

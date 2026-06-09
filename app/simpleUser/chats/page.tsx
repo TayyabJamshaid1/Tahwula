@@ -94,6 +94,10 @@ const ChatPageDesign = () => {
     isRemovingMember,
     transferAdmin,
     isTransferringAdmin,
+    updateGroupImage,
+    isUpdatingGroupImage,
+    deleteGroup,
+    isDeletingGroup,
   } = useChatMutations({
     setSelectedUser,
     setShowAllUser,
@@ -212,6 +216,8 @@ const ChatPageDesign = () => {
       }
     };
     const handleNewMessage = (message: any) => {
+      console.log(message);
+      
       if (selectedUser == message.chatId) {
         setMessages((prev) => {
           if (!prev || prev.length == 0) return [message];
@@ -320,6 +326,7 @@ const ChatPageDesign = () => {
           _id: data.group.chat._id,
           isGroupChat: true,
           groupName: data.group.groupInfo?.groupName,
+          groupImage: data.group.groupInfo?.groupImage,
           groupAdmin: data.group.groupInfo?.admin,
           users: data.group.groupInfo?.members || [],
         });
@@ -410,6 +417,7 @@ const ChatPageDesign = () => {
           _id: chat.chat._id,
           isGroupChat: chat.chatType === "group",
           groupName: chat.groupInfo?.groupName,
+          groupImage: chat.groupInfo?.groupImage,
           groupAdmin: chat.groupInfo?.admin,
           users: chat.groupInfo?.members || [],
         });
@@ -580,7 +588,11 @@ const ChatPageDesign = () => {
             removeGroupMember={removeGroupMember}
             isRemovingMember={isRemovingMember}
             transferAdmin={transferAdmin}
-isTransferringAdmin={isTransferringAdmin}
+            isTransferringAdmin={isTransferringAdmin}
+            updateGroupImage={updateGroupImage}
+            isUpdatingGroupImage={isUpdatingGroupImage}
+            deleteGroup={deleteGroup}
+            isDeletingGroup={isDeletingGroup}
           />
         )}
       </div>

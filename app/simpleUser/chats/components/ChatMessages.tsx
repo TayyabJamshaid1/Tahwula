@@ -34,7 +34,24 @@ const ChatMessages = ({
     const sender = groupMembers.find((m) => m._id === senderId);
     return sender?.name || "Unknown User";
   };
+const getSeenByMembers = (
+  seenBy: { userId: string; seenAt: string }[] = [],
+) => {
+  if (!isGroupChat) return [];
 
+  return seenBy
+    .filter((seen) => seen.userId !== loggedInUser?._id)
+    .map((seen) => {
+      const member = groupMembers.find(
+        (m) => m._id === seen.userId,
+      );
+
+      return {
+        name: member?.name || "Unknown user",
+        seenAt: seen.seenAt,
+      };
+    });
+};
   if (!selectedUser) {
     return (
       <div className="flex-1 overflow-hidden">
@@ -63,6 +80,8 @@ const ChatMessages = ({
       {messages && messages.length > 0 ? (
         messages.map((message, index) => {
           const isSentByMe = message.sender === loggedInUser?._id;
+          const seenByMembers = getSeenByMembers(message.seenBy);
+const isSeenByOthers = seenByMembers.length > 0;
           const senderName = getSenderName(message.sender);
           const uniqueKey = `${message._id}-${index}`;
           if (message.messageType === "system") {
@@ -110,43 +129,67 @@ const ChatMessages = ({
                 }`}
               >
                 <span>{moment(message.createdAt).format("hh:mm A")}</span>
-                {isSentByMe && (
-                  <div className="flex items-center ml-1">
-                    {message.seenBy?.some(
-                      (s) => s.userId !== loggedInUser?._id,
-                    ) ? (
-                      <div className="flex items-center gap-1 text-blue-400">
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </div>
-                    ) : (
-                      <svg
-                        className="w-3 h-3 text-gray-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                )}
+           {isSentByMe && (
+  <div className="relative group flex items-center ml-1">
+    {isSeenByOthers ? (
+      <>
+        <div className="flex items-center gap-1 text-blue-400 cursor-pointer">
+          <svg
+            className="w-3 h-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+
+          {isGroupChat && (
+            <span className="text-[10px]">
+              Seen by {seenByMembers.length}
+            </span>
+          )}
+        </div>
+
+        {isGroupChat && (
+          <div className="absolute bottom-5 right-0 hidden group-hover:block bg-gray-900 border border-gray-700 rounded-lg shadow-lg p-2 min-w-40 z-50">
+            <p className="text-xs text-gray-400 mb-1">Seen by</p>
+
+            {seenByMembers.map((seenUser, index) => (
+              <div
+                key={`${seenUser.name}-${index}`}
+                className="text-xs text-white flex justify-between gap-3 py-1"
+              >
+                <span>{seenUser.name}</span>
+                <span className="text-gray-400">
+                  {moment(seenUser.seenAt).format("hh:mm A")}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </>
+    ) : (
+      <svg
+        className="w-3 h-3 text-gray-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5 13l4 4L19 7"
+        />
+      </svg>
+    )}
+  </div>
+)}
               </div>
             </div>
           );

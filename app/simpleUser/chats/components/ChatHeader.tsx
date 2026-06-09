@@ -80,15 +80,10 @@ const ChatHeader = ({
             </h2>
             {isGroupChat && (
               <button
-                onClick={() => setShowMembers(!showMembers)}
-                className="flex items-center gap-1 px-2 py-1 bg-gray-700 rounded-lg text-xs hover:bg-gray-600 transition-colors"
+                className="flex items-center gap-1 px-2 py-1 bg-gray-700 rounded-lg text-xs hover:bg-gray-600 transition-colors text-white"
               >
                 <span>{groupMembers.length} members</span>
-                {showMembers ? (
-                  <ChevronUp className="w-3 h-3" />
-                ) : (
-                  <ChevronDown className="w-3 h-3" />
-                )}
+               
               </button>
             )}
           </div>
@@ -133,37 +128,7 @@ const ChatHeader = ({
         </div>
       </div>
 
-      {/* Members dropdown for group chat */}
-      {isGroupChat && showMembers && (
-        <div className="mt-3 pt-3 border-t border-gray-700">
-          <p className="text-xs font-semibold text-gray-400 mb-2">
-            Group Members:
-          </p>
-          <div className="space-y-1 max-h-32 overflow-y-auto">
-            {groupMembers.map((member) => (
-              <div
-                key={member._id}
-                className="flex items-center justify-between text-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-1.5 h-1.5 rounded-full ${onlineUsers.includes(member._id) ? "bg-green-500" : "bg-gray-500"}`}
-                  ></div>
-                  <span
-                    className={
-                      member._id === loggedInUser?._id
-                        ? "text-blue-400"
-                        : "text-gray-300"
-                    }
-                  >
-                    {member.name} {member._id === loggedInUser?._id && "(You)"}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 };

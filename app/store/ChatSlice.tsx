@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User } from "./AuthSlice";
-import { addMembersToGroup, createGroupChat, createNewChat, FetchAllChats, leaveGroupChat, MessagesByChatId, removeMemberFromGroup, renameGroupChat, sendMessage, transferGroupAdmin } from "@/lib/ChatActions";
+import { addMembersToGroup, createGroupChat, createNewChat, deleteGroupChat, FetchAllChats, leaveGroupChat, MessagesByChatId, removeMemberFromGroup, renameGroupChat, sendMessage, transferGroupAdmin, updateGroupImage } from "@/lib/ChatActions";
 
 /*TYPES */
 export interface Message {
@@ -239,6 +239,52 @@ export const transferGroupAdminThunk = createAsyncThunk(
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.message || "Failed to transfer admin",
+      );
+    }
+  },
+);
+export const deleteGroupChatThunk = createAsyncThunk(
+  "chat/deleteGroupChat",
+  async (chatId: string, thunkAPI) => {
+    try {
+      const response = await deleteGroupChat(chatId);
+
+      if (!response.success) {
+        return thunkAPI.rejectWithValue(response.message);
+      }
+
+      return response;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.message || "Failed to delete group",
+      );
+    }
+  },
+);
+export const updateGroupImageThunk = createAsyncThunk(
+  "chat/updateGroupImage",
+  async (
+    payload: {
+      chatId: string;
+      image: File;
+    },
+    thunkAPI,
+  ) => {
+    try {
+      const response = await updateGroupImage
+      (
+        payload.chatId,
+        payload.image,
+      );
+
+      if (!response.success) {
+        return thunkAPI.rejectWithValue(response.message);
+      }
+
+      return response;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.message || "Failed to update group image",
       );
     }
   },

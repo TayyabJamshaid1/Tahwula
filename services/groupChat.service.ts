@@ -48,7 +48,7 @@ export const createGroupChatService = async ({
     groupName: groupName.trim(),
     admin: creatorId,
     latestMessage: {
-      text: "Group created",
+      text: `${groupName.trim()} was created`,
       sender: creatorId,
     },
   });
@@ -58,7 +58,7 @@ export const createGroupChatService = async ({
   await createSystemMessage({
     chatId: groupId,
     sender: creatorId,
-    text: "Group created",
+    text: `${groupName.trim()} was created`,
     action: SystemActions.GROUP_CREATED,
   });
 
@@ -158,11 +158,14 @@ export const addMembersToGroupService = async ({
   group.users.push(...newMembers);
 
   await group.save();
-
+  const addedUsers = await User.find({
+    _id: { $in: newMembers },
+  }).select("name");
+  const names = addedUsers.map((u) => u.name).join(", ");
   await createSystemMessage({
     chatId,
     sender: adminId,
-    text: `${newMembers.length} member(s) added`,
+    text: `${names} were added to the group`,
     action: SystemActions.MEMBER_ADDED,
   });
 
@@ -228,7 +231,7 @@ export const addMembersToGroupService = async ({
         payload: {
           chatId,
           action: "members_added",
-          message: `${newMembers.length} member(s) added`,
+          message: `${names} joined the group`,
           updatedBy: adminId,
           group: formattedGroup,
           meta: {
@@ -301,11 +304,12 @@ export const removeMemberFromGroupService = async ({
   );
 
   await group.save();
+  const removedUser = await User.findById(memberId);
 
   await createSystemMessage({
     chatId,
     sender: adminId,
-    text: "A member was removed",
+    text: `${removedUser?.name} was removed from the group`,
     action: SystemActions.MEMBER_REMOVED,
   });
 
@@ -368,7 +372,7 @@ export const removeMemberFromGroupService = async ({
         payload: {
           chatId,
           action: "member_removed",
-          message: "A member was removed",
+          message: `${removedUser?.name} was removed from the group`,
           updatedBy: adminId,
           group: formattedGroup,
           meta: {
@@ -468,11 +472,12 @@ export const leaveGroupService = async ({
   );
 
   await group.save();
+  const user = await User.findById(userId);
 
   await createSystemMessage({
     chatId,
     sender: userId,
-    text: "A member left the group",
+    text: `${user?.name} left the group`,
     action: SystemActions.MEMBER_LEFT,
   });
 
@@ -535,7 +540,7 @@ export const leaveGroupService = async ({
         payload: {
           chatId,
           action: "member_left",
-          message: "A member left the group",
+          message: `${user?.name} left the group`,
           updatedBy: userId,
           group: formattedGroup,
           meta: {
@@ -705,11 +710,12 @@ export const transferGroupAdminService = async ({
   group.admin = newAdminId;
 
   await group.save();
+  const newAdmin = await User.findById(newAdminId);
 
   await createSystemMessage({
     chatId,
     sender: currentAdminId,
-    text: "Group admin changed",
+    text: `Admin role transferred to ${newAdmin?.name}`,
     action: SystemActions.ADMIN_TRANSFERRED,
   });
 
@@ -742,7 +748,7 @@ export const transferGroupAdminService = async ({
         payload: {
           chatId,
           action: "admin_transferred",
-          message: "Group admin changed",
+          message: `${newAdmin?.name} is the new admin`,
           updatedBy: currentAdminId,
           group: formattedGroup,
           meta: {
@@ -830,5 +836,132 @@ export const deleteGroupService = async ({
 
   return {
     message: "Group deleted successfully",
+  };
+};
+interface UpdateGroupImageParams {
+  chatId: string;
+  adminId: string;
+  image: File | null;
+}
+
+export const updateGroupImageService = async ({
+  chatId,
+  adminId,
+  image,
+}: UpdateGroupImageParams) => {
+  if (!mongoose.Types.ObjectId.isValid(chatId)) {
+    throw new Error("Invalid chat id");
+  }
+
+  if (!image) {
+    throw new Error("Group image is required");
+  }
+
+  const group = await Chat.findById(chatId);
+
+  if (!group) {
+    throw new Error("Group not found");
+  }
+
+  if (!group.isGroupChat) {
+    throw new Error("This is not a group chat");
+  }
+
+  if (group.admin?.toString() !== adminId.toString()) {
+    throw new Error("Only admin can update group image");
+  }
+
+  // Upload to Cloudinary
+  const bytes = await image.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+
+  const uploadResult = await new Promise<any>((resolve, reject) => {
+    cloudinary.uploader
+      .upload_stream(
+        {
+          folder: "group-images",
+        },
+        (error, result) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+
+          resolve(result);
+        },
+      )
+      .end(buffer);
+  });
+
+  // Optional: delete old image
+  if (group.groupImage?.publicId) {
+    try {
+      await cloudinary.uploader.destroy(group.groupImage.publicId);
+    } catch (error) {
+      console.log("Failed to delete old group image:", error);
+    }
+  }
+
+  group.groupImage = {
+    url: uploadResult.secure_url,
+    publicId: uploadResult.public_id,
+  };
+
+  await group.save();
+
+  await createSystemMessage({
+    chatId,
+    sender: adminId,
+    text: "Group image updated",
+    action: SystemActions.GROUP_IMAGE_UPDATED,
+  });
+
+  const membersData = await User.find({
+    _id: {
+      $in: group.users,
+    },
+  }).select("-password");
+
+  const unseenCount = await Message.countDocuments({
+    chatId: group._id,
+    sender: { $ne: adminId },
+    "seenBy.userId": {
+      $ne: adminId,
+    },
+  });
+
+  const formattedGroup = formatGroupChatResponse({
+    group,
+    unseenCount,
+    members: membersData,
+  });
+
+  try {
+    await axios.post(
+      `${process.env.NEXT_PUBLIC_SOCKET_URL}/chatRoutes/emit-room`,
+      {
+        roomId: chatId,
+        event: "groupUpdated",
+        payload: {
+          chatId,
+          action: "group_image_updated",
+          message: "Group image updated",
+          updatedBy: adminId,
+          group: formattedGroup,
+          meta: {},
+        },
+      },
+      {
+        headers: {
+          "x-internal-secret": process.env.INTERNAL_SOCKET_SECRET,
+        },
+      },
+    );
+  } catch (error) {
+    console.log("Socket group image update failed:", error);
+  }
+
+  return {
+    group: formattedGroup,
   };
 };

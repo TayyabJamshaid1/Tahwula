@@ -26,6 +26,7 @@ export interface GroupDetails {
   isGroupChat: boolean;
   groupName?: string;
   groupAdmin?: string;
+  groupImage?: string;
   users: User[];
   participants?: string[];
 }

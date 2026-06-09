@@ -2,7 +2,7 @@ import { ConnectToDatabase } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { validateSessionAndGetUser } from "@/app/api/auth/use-cases/sessions";
-import { createGroupChatService,addMembersToGroupService ,removeMemberFromGroupService,transferGroupAdminService, leaveGroupService, renameGroupService,deleteGroupService} from "@/services/groupChat.service";
+import { createGroupChatService,addMembersToGroupService ,removeMemberFromGroupService,transferGroupAdminService, leaveGroupService, renameGroupService,deleteGroupService, updateGroupImageService} from "@/services/groupChat.service";
 
 export const createGroupChatController = async (req: NextRequest) => {
   try {
@@ -288,6 +288,7 @@ export const renameGroupController = async (
     );
   }
 };
+
 export const deleteGroupController = async (
   req: NextRequest,
   chatId: string,
@@ -327,6 +328,56 @@ export const deleteGroupController = async (
       {
         success: false,
         message: error.message || "Failed to delete group",
+      },
+      { status: 500 },
+    );
+  }
+};
+export const updateGroupImageController = async (
+  req: NextRequest,
+  chatId: string,
+) => {
+  try {
+    await ConnectToDatabase();
+
+    const cookieStore = await cookies();
+    const session = cookieStore.get("session")?.value;
+
+    if (!session) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized",
+        },
+        { status: 401 },
+      );
+    }
+
+    const currentUser = await validateSessionAndGetUser(session);
+
+    const formData = await req.formData();
+
+    const image = formData.get("image") as File | null;
+
+    const result = await updateGroupImageService({
+      chatId,
+      adminId: currentUser.userId._id.toString(),
+      image,
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Group image updated successfully",
+        group: result.group,
+      },
+      { status: 200 },
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message || "Failed to update group image",
       },
       { status: 500 },
     );

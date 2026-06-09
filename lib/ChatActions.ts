@@ -138,7 +138,7 @@ export const createGroupChat = async (
   }
 };
 export const renameGroupChat = async (chatId: string, groupName: string) => {
-  const res = await fetch(`/api/chat/group/rename/${chatId}`, {
+  const res = await fetch(`/api/chat/group/rename-group/${chatId}`, {
     method: "PATCH",
     headers: {
       "Content-type": "application/json",
@@ -264,5 +264,51 @@ export const transferGroupAdmin = async (
     success: true,
     message: data?.message,
     group: data?.group,
+  };
+};
+export const updateGroupImage = async (
+  chatId: string,
+  image: File,
+) => {
+  const formData = new FormData();
+  formData.append("image", image);
+
+  const res = await fetch(`/api/chat/group/image/${chatId}`, {
+    method: "PATCH",
+    body: formData,
+  });
+
+  const data = await res.json();
+
+  if (!data?.success) {
+    return {
+      success: false,
+      message: data?.message,
+    };
+  }
+
+  return {
+    success: true,
+    message: data?.message,
+    group: data?.group,
+  };
+};
+export const deleteGroupChat = async (chatId: string) => {
+  const res = await fetch(`/api/chat/group/delete/${chatId}`, {
+    method: "DELETE",
+  });
+
+  const data = await res.json();
+
+  if (!data?.success) {
+    return {
+      success: false,
+      message: data?.message,
+    };
+  }
+
+  return {
+    success: true,
+    message: data?.message,
   };
 };

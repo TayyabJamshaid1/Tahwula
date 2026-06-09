@@ -4,14 +4,17 @@ import { User } from "@/app/store/AuthSlice";
 import { Crown, UserCircle, Users, X, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import ConfirmationRemovalChatBox from "./ConfirmationRemovalChatBox";
 import GroupActionConfirmModal from "./ConfirmationRemovalChatBox";
 
 interface GroupInfoModalProps {
   currentChatDetails: any;
   loggedInUser: User | null;
   users: User[];
-
+deleteGroup: (payload: {
+  chatId: string;
+  onSuccess?: () => void;
+}) => void;
+isDeletingGroup: boolean;
   renameGroup: (payload: {
     chatId: string;
     groupName: string;
@@ -42,7 +45,13 @@ interface GroupInfoModalProps {
     newAdminId: string;
     onSuccess?: () => void;
   }) => void;
+  updateGroupImage: (payload: {
+    chatId: string;
+    image: File;
+    onSuccess?: () => void;
+  }) => void;
 
+  isUpdatingGroupImage: boolean;
   isTransferringAdmin: boolean;
 }
 
@@ -51,6 +60,8 @@ const GroupInfoModal = ({
   transferAdmin,
   isTransferringAdmin,
   loggedInUser,
+  updateGroupImage,
+  isUpdatingGroupImage,
   users,
   removeGroupMember,
   isRemovingMember,
@@ -60,6 +71,8 @@ const GroupInfoModal = ({
   isRenamingGroup,
   isAddingMembers,
   isLeavingGroup,
+  deleteGroup,
+  isDeletingGroup,
   onClose,
 }: GroupInfoModalProps) => {
   if (!currentChatDetails) return null;
@@ -73,6 +86,9 @@ const GroupInfoModal = ({
   const [newGroupName, setNewGroupName] = useState(
     currentChatDetails.groupName || "",
   );
+  const [showDeleteGroupConfirm, setShowDeleteGroupConfirm] =
+  useState(false);
+  const [groupImageFile, setGroupImageFile] = useState<File | null>(null);
   const [memberToMakeAdmin, setMemberToMakeAdmin] = useState<User | null>(null);
   const [showAddMembers, setShowAddMembers] = useState(false);
   const [selectedNewMembers, setSelectedNewMembers] = useState<string[]>([]);
@@ -133,7 +149,7 @@ const GroupInfoModal = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-gray-900 border border-gray-700 rounded-xl p-5 text-white">
+      <div className="w-full max-w-md xl:max-w-lg bg-gray-900 border border-gray-700 rounded-xl p-5 text-white">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-bold">Group Info</h2>
 
@@ -153,7 +169,60 @@ const GroupInfoModal = ({
               <Users className="w-10 h-10 text-gray-300" />
             )}
           </div>
+          {isLoggedInUserAdmin && (
+            <div className="flex flex-col items-center gap-2 mb-3">
+              <label className="text-xs text-blue-400 cursor-pointer hover:underline">
+                Change group image
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={isUpdatingGroupImage}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
 
+                    if (file && file.type.startsWith("image/")) {
+                      setGroupImageFile(file);
+                    }
+                  }}
+                />
+              </label>
+
+              {groupImageFile && (
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-xs text-gray-400">
+                    {groupImageFile.name}
+                  </span>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        updateGroupImage({
+                          chatId: currentChatDetails._id,
+                          image: groupImageFile,
+                          onSuccess: () => {
+                            setGroupImageFile(null);
+                          },
+                        });
+                      }}
+                      disabled={isUpdatingGroupImage}
+                      className="text-xs bg-green-600 px-3 py-1 rounded-lg disabled:opacity-50"
+                    >
+                      {isUpdatingGroupImage ? "Uploading..." : "Upload"}
+                    </button>
+
+                    <button
+                      onClick={() => setGroupImageFile(null)}
+                      disabled={isUpdatingGroupImage}
+                      className="text-xs bg-gray-700 px-3 py-1 rounded-lg disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           {isEditingName ? (
             <div className="w-full flex gap-2">
               <input
@@ -324,6 +393,15 @@ const GroupInfoModal = ({
         >
           {isLeavingGroup ? "Leaving..." : "Leave Group"}
         </button>
+        {isLoggedInUserAdmin && (
+  <button
+    onClick={() => setShowDeleteGroupConfirm(true)}
+    disabled={isDeletingGroup}
+    className="w-full mt-3 bg-red-800 hover:bg-red-900 py-2 rounded-lg disabled:opacity-50"
+  >
+    {isDeletingGroup ? "Deleting..." : "Delete Group"}
+  </button>
+)}
       </div>
       <GroupActionConfirmModal
         open={!!memberToRemove}
@@ -344,7 +422,24 @@ const GroupInfoModal = ({
           });
         }}
       />
-
+<GroupActionConfirmModal
+  open={showDeleteGroupConfirm}
+  title="Delete Group"
+  description="Are you sure you want to delete this group? This action cannot be undone."
+  confirmText="Delete"
+  confirmClassName="bg-red-700 hover:bg-red-800"
+  isLoading={isDeletingGroup}
+  onCancel={() => setShowDeleteGroupConfirm(false)}
+  onConfirm={() => {
+    deleteGroup({
+      chatId: currentChatDetails._id,
+      onSuccess: () => {
+        setShowDeleteGroupConfirm(false);
+        onClose();
+      },
+    });
+  }}
+/>
       <GroupActionConfirmModal
         open={!!memberToMakeAdmin}
         title="Transfer Admin"
