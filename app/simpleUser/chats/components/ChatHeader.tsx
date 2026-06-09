@@ -16,6 +16,7 @@ interface ChatHeaderProps {
   chatId?: string | null;
   loggedInUser?: User | null;
   typingUserName?: string;
+  setShowGroupInfo?: (show: boolean) => void;
 }
 
 const ChatHeader = ({
@@ -25,6 +26,7 @@ const ChatHeader = ({
   isGroupChat = false,
   typingUserName = "",
   groupName,
+  setShowGroupInfo,
   groupMembers = [],
   loggedInUser,
 }: ChatHeaderProps) => {
@@ -41,8 +43,17 @@ const ChatHeader = ({
   }
 
   return (
-    <div className="p-[8.5px] border-b border-gray-700 bg-gray-900">
-      <div className="flex items-center gap-3">
+<div
+  className={`p-[8.5px] border-b border-gray-700 bg-gray-900 ${
+    isGroupChat ? "cursor-pointer hover:bg-gray-800" : ""
+  }`}
+  onClick={() => {
+    if (isGroupChat) {
+      setShowGroupInfo?.(true);
+    }
+  }}
+>
+        <div className="flex items-center gap-3">
         <div className="relative">
           <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
             {isGroupChat ? (

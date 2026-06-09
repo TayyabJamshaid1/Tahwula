@@ -16,6 +16,7 @@ import ChatSidebar from "./components/ChatSidebar";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
+import GroupInfoModal from "./components/ GroupInfoModal";
 
 const ChatPageDesign = () => {
   const userInfo: User | null = useAppSelector((state) => state?.auth?.user);
@@ -23,6 +24,7 @@ const ChatPageDesign = () => {
 
   // State declarations
   const [typingUserName, setTypingUserName] = useState("");
+  const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [message, setMessage] = useState("");
@@ -524,6 +526,7 @@ const ChatPageDesign = () => {
                 isGroupChat={currentChatDetails?.isGroupChat}
                 groupName={currentChatDetails?.groupName}
                 groupMembers={currentChatDetails?.users || []}
+                setShowGroupInfo={setShowGroupInfo}
               />
             </div>
 
@@ -552,6 +555,13 @@ const ChatPageDesign = () => {
               />
             </div>
           </>
+        )}
+        {showGroupInfo && currentChatDetails?.isGroupChat && (
+          <GroupInfoModal
+            currentChatDetails={currentChatDetails}
+            loggedInUser={userInfo}
+            onClose={() => setShowGroupInfo(false)}
+          />
         )}
       </div>
     </div>
