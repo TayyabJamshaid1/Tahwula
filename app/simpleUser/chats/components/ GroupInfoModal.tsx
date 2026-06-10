@@ -220,13 +220,13 @@ const GroupInfoModal = ({
             </div>
           )}
           {isEditingName ? (
-            <div className="w-full flex gap-2">
+            <div className="w-full flex gap-2 flex-col sm:flex-row items-center">
               <input
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
                 className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
               />
-
+<div className="flex gap-2 py-2 ">
               <button
                 onClick={handleRenameGroup}
                 disabled={isRenamingGroup}
@@ -245,6 +245,7 @@ const GroupInfoModal = ({
               >
                 Cancel
               </button>
+              </div>
             </div>
           ) : (
             <div className="flex items-center gap-2">
@@ -357,7 +358,7 @@ const GroupInfoModal = ({
                     )}
 
                     {isLoggedInUserAdmin && !isAdmin && !isMe && (
-                      <>
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => setMemberToMakeAdmin(member)}
                           disabled={isTransferringAdmin}
@@ -373,7 +374,7 @@ const GroupInfoModal = ({
                         >
                           Remove
                         </button>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
