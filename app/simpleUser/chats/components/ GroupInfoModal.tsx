@@ -10,11 +10,8 @@ interface GroupInfoModalProps {
   currentChatDetails: any;
   loggedInUser: User | null;
   users: User[];
-deleteGroup: (payload: {
-  chatId: string;
-  onSuccess?: () => void;
-}) => void;
-isDeletingGroup: boolean;
+  deleteGroup: (payload: { chatId: string; onSuccess?: () => void }) => void;
+  isDeletingGroup: boolean;
   renameGroup: (payload: {
     chatId: string;
     groupName: string;
@@ -86,8 +83,7 @@ const GroupInfoModal = ({
   const [newGroupName, setNewGroupName] = useState(
     currentChatDetails.groupName || "",
   );
-  const [showDeleteGroupConfirm, setShowDeleteGroupConfirm] =
-  useState(false);
+  const [showDeleteGroupConfirm, setShowDeleteGroupConfirm] = useState(false);
   const [groupImageFile, setGroupImageFile] = useState<File | null>(null);
   const [memberToMakeAdmin, setMemberToMakeAdmin] = useState<User | null>(null);
   const [showAddMembers, setShowAddMembers] = useState(false);
@@ -148,8 +144,8 @@ const GroupInfoModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
-      <div className="w-full max-w-md xl:max-w-lg bg-gray-900 border border-gray-700 rounded-xl p-5 text-white">
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-2 sm:p-4">
+      <div className="w-full max-w-md max-h-[92vh] overflow-y-auto bg-gray-900 border border-gray-700 rounded-xl p-4 sm:p-5 text-white">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-bold">Group Info</h2>
 
@@ -339,7 +335,7 @@ const GroupInfoModal = ({
               return (
                 <div
                   key={member._id}
-                  className="flex items-center justify-between p-3 bg-gray-800 rounded-lg"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-gray-800 rounded-lg"
                 >
                   <div className="flex items-center gap-3">
                     <UserCircle className="w-6 h-6 text-gray-300" />
@@ -352,7 +348,7 @@ const GroupInfoModal = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {isAdmin && (
                       <div className="flex items-center gap-1 text-yellow-400 text-xs">
                         <Crown className="w-4 h-4" />
@@ -394,14 +390,14 @@ const GroupInfoModal = ({
           {isLeavingGroup ? "Leaving..." : "Leave Group"}
         </button>
         {isLoggedInUserAdmin && (
-  <button
-    onClick={() => setShowDeleteGroupConfirm(true)}
-    disabled={isDeletingGroup}
-    className="w-full mt-3 bg-red-800 hover:bg-red-900 py-2 rounded-lg disabled:opacity-50"
-  >
-    {isDeletingGroup ? "Deleting..." : "Delete Group"}
-  </button>
-)}
+          <button
+            onClick={() => setShowDeleteGroupConfirm(true)}
+            disabled={isDeletingGroup}
+            className="w-full mt-3 bg-red-800 hover:bg-red-900 py-2 rounded-lg disabled:opacity-50"
+          >
+            {isDeletingGroup ? "Deleting..." : "Delete Group"}
+          </button>
+        )}
       </div>
       <GroupActionConfirmModal
         open={!!memberToRemove}
@@ -422,24 +418,24 @@ const GroupInfoModal = ({
           });
         }}
       />
-<GroupActionConfirmModal
-  open={showDeleteGroupConfirm}
-  title="Delete Group"
-  description="Are you sure you want to delete this group? This action cannot be undone."
-  confirmText="Delete"
-  confirmClassName="bg-red-700 hover:bg-red-800"
-  isLoading={isDeletingGroup}
-  onCancel={() => setShowDeleteGroupConfirm(false)}
-  onConfirm={() => {
-    deleteGroup({
-      chatId: currentChatDetails._id,
-      onSuccess: () => {
-        setShowDeleteGroupConfirm(false);
-        onClose();
-      },
-    });
-  }}
-/>
+      <GroupActionConfirmModal
+        open={showDeleteGroupConfirm}
+        title="Delete Group"
+        description="Are you sure you want to delete this group? This action cannot be undone."
+        confirmText="Delete"
+        confirmClassName="bg-red-700 hover:bg-red-800"
+        isLoading={isDeletingGroup}
+        onCancel={() => setShowDeleteGroupConfirm(false)}
+        onConfirm={() => {
+          deleteGroup({
+            chatId: currentChatDetails._id,
+            onSuccess: () => {
+              setShowDeleteGroupConfirm(false);
+              onClose();
+            },
+          });
+        }}
+      />
       <GroupActionConfirmModal
         open={!!memberToMakeAdmin}
         title="Transfer Admin"

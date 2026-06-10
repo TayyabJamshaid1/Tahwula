@@ -471,7 +471,7 @@ const ChatPageDesign = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex overflow-hidden">
+    <div className="h-[calc(100vh-4rem)] flex overflow-hidden w-full max-w-full">
       {/* Chat List Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-40
@@ -510,7 +510,7 @@ const ChatPageDesign = () => {
       )}
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden w-full max-w-full">
         {/* Mobile header with menu button */}
         <div className="lg:hidden flex items-center gap-3 p-4 border-b border-gray-700 bg-gray-900 sticky top-0 z-10">
           <div

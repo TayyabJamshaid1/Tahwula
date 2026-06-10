@@ -31,7 +31,8 @@ const MessageInput = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if ((!message.trim() && !imageFile) || isSendingMessage || isUploading) return;
+    if ((!message.trim() && !imageFile) || isSendingMessage || isUploading)
+      return;
     setIsUploading(true);
     await handleMessageSend(e, imageFile);
     setImageFile(null);
@@ -49,10 +50,10 @@ const MessageInput = ({
       </div>
     );
   }
-    if (messagesLoading) return null;
-  
+  if (messagesLoading) return null;
+
   return (
-    <div className="border-t border-gray-700 bg-gray-900 p-4">
+    <div className="border-t border-gray-700 bg-gray-900 p-2 sm:p-4 w-full">
       {imageFile && (
         <div className="relative w-fit mb-3">
           <img
@@ -70,7 +71,11 @@ const MessageInput = ({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex items-center gap-2">
+      <form
+        onSubmit={handleSubmit}
+        className="flex items-center gap-2 w-full min-w-0"
+      >
+        {" "}
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
@@ -79,7 +84,6 @@ const MessageInput = ({
         >
           <ImageIcon className="w-5 h-5 text-gray-300" />
         </button>
-        
         <input
           type="file"
           ref={fileInputRef}
@@ -92,7 +96,6 @@ const MessageInput = ({
             }
           }}
         />
-
         <input
           type="text"
           value={message}
@@ -101,12 +104,14 @@ const MessageInput = ({
             handleTyping(e.target.value);
           }}
           disabled={isSendingMessage || isUploading}
-          className="flex-1 bg-gray-800 rounded-lg px-4 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-   placeholder={imageFile ? "Add a caption..." : "Type your message..."}        />
-
+          className="flex-1 min-w-0 bg-gray-800 rounded-lg px-4 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+          placeholder={imageFile ? "Add a caption..." : "Type your message..."}
+        />
         <button
           type="submit"
-          disabled={(!message.trim() && !imageFile) || isSendingMessage || isUploading}
+          disabled={
+            (!message.trim() && !imageFile) || isSendingMessage || isUploading
+          }
           className="bg-blue-600 hover:bg-blue-700 p-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSendingMessage || isUploading ? (
