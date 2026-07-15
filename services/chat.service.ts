@@ -21,7 +21,6 @@ export const createNewChatService = async (
   // =========================================
   // CHECK EXISTING CHAT
   // =========================================
-
   const existingChat = await Chat.findOne({
     users: {
       $all: [userId, otherUserId],
@@ -420,7 +419,6 @@ export const sendMessageService = async ({
   // =========================
   // IMAGE UPLOAD
   // =========================
-
   let imageData;
 
   if (image) {

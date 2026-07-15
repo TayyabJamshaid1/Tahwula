@@ -5,9 +5,7 @@ export async function getCurrentUser() {
   try {
     const cookieStore = await cookies();
     const session = cookieStore.get("session")?.value;
-
     if (!session) return null;
-
     const sessionData = await validateSessionAndGetUser(session);
 
     if (!sessionData) return null;

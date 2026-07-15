@@ -25,17 +25,13 @@ export const loginService = async (
   if (!isValidPassword) {
     throw new Error("Invalid Email or Password");
   }
-
   await createSessionAndSetCookies(user._id.toString());
-
   return user;
 };
 
 export const registerService = async (data: any) => {
   const session = await mongoose.startSession();
-
   session.startTransaction();
-
   try {
     const {
       email,
@@ -108,13 +104,9 @@ export const forgotPasswordService = async (
 
   user.resetPasswordToken = token;
   user.resetPasswordExpiry = expiry;
-
   await user.save();
-
   const resetLink = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
-
   await sendResetEmail(email, resetLink);
-
   return true;
 };
 
