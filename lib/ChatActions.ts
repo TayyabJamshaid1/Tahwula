@@ -279,7 +279,6 @@ export const updateGroupImage = async (
   });
 
   const data = await res.json();
-
   if (!data?.success) {
     return {
       success: false,
@@ -299,7 +298,6 @@ export const deleteGroupChat = async (chatId: string) => {
   });
 
   const data = await res.json();
-
   if (!data?.success) {
     return {
       success: false,

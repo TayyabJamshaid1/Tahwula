@@ -246,7 +246,7 @@ export const addMembersToGroupService = async ({
       },
     );
   } catch (error) {
-    console.log("Socket groupUpdated failed:", error);
+    console.log("Socket group Updated failed:", error);
   }
 
   return {
@@ -706,12 +706,10 @@ export const transferGroupAdminService = async ({
   }
 
   const oldAdminId = group.admin;
-
   group.admin = newAdminId;
 
   await group.save();
   const newAdmin = await User.findById(newAdminId);
-
   await createSystemMessage({
     chatId,
     sender: currentAdminId,
