@@ -1,5 +1,3 @@
-import { NextRequest } from "next/server";
-
 export function runMiddleware(
   req: any,
   res: any,

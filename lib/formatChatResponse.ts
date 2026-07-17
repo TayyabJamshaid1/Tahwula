@@ -9,7 +9,6 @@ export const formatGroupChatResponse = ({
 }) => {
   return {
     chatType: "group",
-
     groupInfo: {
       _id: group._id,
       groupName: group.groupName,
@@ -18,7 +17,6 @@ export const formatGroupChatResponse = ({
       users: group.users,
       members,
     },
-
     chat: {
       ...group.toObject(),
       latestMessage: group.latestMessage,
