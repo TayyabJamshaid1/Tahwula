@@ -1,5 +1,4 @@
 import React from "react";
-
 interface GroupActionConfirmModalProps {
   open: boolean;
   title: string;
@@ -27,9 +26,7 @@ const GroupActionConfirmModal = ({
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60]">
       <div className="bg-gray-900 border border-gray-700 rounded-xl p-5 w-[320px]">
         <h3 className="font-semibold mb-2 text-white">{title}</h3>
-
         <p className="text-sm text-gray-400">{description}</p>
-
         <div className="flex gap-2 mt-4">
           <button
             disabled={isLoading}
@@ -50,7 +47,7 @@ const GroupActionConfirmModal = ({
               isLoading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            {isLoading ? "Processing..." : confirmText}
+            {isLoading ? "Processing request..." : confirmText}
           </button>
         </div>
       </div>

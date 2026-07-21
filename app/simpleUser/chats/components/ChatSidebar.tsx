@@ -60,7 +60,7 @@ const ChatSidebar = ({
     }
 
     if (selectedGroupUsers.length < 1) {
-      toast.error("Select at least one member");
+      toast.error("Select at least one member to create a group");
       return;
     }
 
