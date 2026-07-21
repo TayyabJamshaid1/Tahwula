@@ -43,17 +43,17 @@ const ChatHeader = ({
   }
 
   return (
-<div
-  className={`p-[8.5px] border-b border-gray-700 bg-gray-900 ${
-    isGroupChat ? "cursor-pointer hover:bg-gray-800" : ""
-  }`}
-  onClick={() => {
-    if (isGroupChat) {
-      setShowGroupInfo?.(true);
-    }
-  }}
->
-        <div className="flex items-center gap-3">
+    <div
+      className={`p-[8.5px] border-b border-gray-700 bg-gray-900 ${
+        isGroupChat ? "cursor-pointer hover:bg-gray-800" : ""
+      }`}
+      onClick={() => {
+        if (isGroupChat) {
+          setShowGroupInfo?.(true);
+        }
+      }}
+    >
+      <div className="flex items-center gap-3">
         <div className="relative">
           <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
             {isGroupChat ? (
@@ -79,11 +79,8 @@ const ChatHeader = ({
                 : user?.name || user?.email?.split("@")[0]}
             </h2>
             {isGroupChat && (
-              <button
-                className="flex items-center gap-1 px-2 py-1 bg-gray-700 rounded-lg text-xs hover:bg-gray-600 transition-colors text-white"
-              >
+              <button className="flex items-center gap-1 px-2 py-1 bg-gray-700 rounded-lg text-xs hover:bg-gray-600 transition-colors text-white">
                 <span>{groupMembers.length} members</span>
-               
               </button>
             )}
           </div>
@@ -127,8 +124,6 @@ const ChatHeader = ({
           )}
         </div>
       </div>
-
-      
     </div>
   );
 };

@@ -1,11 +1,9 @@
 "use client";
-
 import { User } from "@/app/store/AuthSlice";
 import { Crown, UserCircle, Users, X, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import GroupActionConfirmModal from "./ConfirmationRemovalChatBox";
-
 interface GroupInfoModalProps {
   currentChatDetails: any;
   loggedInUser: User | null;

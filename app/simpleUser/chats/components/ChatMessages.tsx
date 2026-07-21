@@ -5,7 +5,6 @@ import React, { useEffect, useRef, useState } from "react";
 import moment from "moment";
 import { User } from "@/app/store/AuthSlice";
 import { Message } from "../types/chat.types";
-
 interface ChatMessagesProps {
   selectedUser: string | null;
   messages: Message[] | null;
