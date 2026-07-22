@@ -44,7 +44,7 @@ export default function OverallCompilanceSection() {
             {/* Center Text */}
             <div className="absolute inset-0 flex flex-col items-center justify-center top-[30%] gap-4">
               <span className="text-[40px] font-bold text-[#1D3557]">
-                {progress}%
+                {progress}{" "}%
               </span>
               <span className="text-[13px] text-[#8597A8]">
                 Basic Standards 2025{" "}

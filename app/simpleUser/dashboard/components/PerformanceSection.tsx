@@ -32,7 +32,7 @@ export default function PerformanceSection() {
       {/* 12 Month Performance */}
       <div className="bg-white rounded-xl border border-[#E0E8ED]  pt-4  shadow-sm xl:col-span-2  ">
         <h3 className="text-[16px] font-bold text-[#1D3557] mb-4 px-4">
-          12-Month Performance
+          12 Month Performance
         </h3>
 
         <div className="h-65 ">
@@ -79,82 +79,73 @@ export default function PerformanceSection() {
       </div>
 
       {/* Audit Readiness */}
-<div className="bg-white rounded-xl border border-[#E0E8ED] shadow-sm flex flex-col h-full">
-
-  {/* Header */}
-  <div className="px-4 pt-4">
-    <h3 className="text-[16px] font-bold text-[#1D3557]">
-      Audit Readiness
-    </h3>
-  </div>
-
-  {/* Content */}
-  <div className="flex flex-col flex-1">
-
-    {/* Gauge */}
-    <div className="flex-1 flex items-center justify-center px-4">
-
-      <div className="relative w-full max-w-105 aspect-13/6">
-
-        <svg
-          viewBox="-10 32 280 110"
-          className="w-full h-auto overflow-visible"
-        >
-          <path
-            d="M 30 140 A 100 100 0 0 1 230 140"
-            fill="none"
-            stroke="#E6EBF0"
-            strokeWidth="14"
-            strokeLinecap="round"
-          />
-
-          <path
-            d="M 30 140 A 100 100 0 0 1 230 140"
-            fill="none"
-            stroke="#2E9B4F"
-            strokeWidth="14"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-          />
-        </svg>
-
-        {/* Center Text */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center top-[30%] gap-4">
-          <span className="text-[40px] font-bold text-[#1D3557]">
-            {progress}%
-          </span>
-          <span className="text-[13px] text-[#8597A8]">
-            Readiness Level
-          </span>
+      <div className="bg-white rounded-xl border border-[#E0E8ED] shadow-sm flex flex-col h-full">
+        {/* Header */}
+        <div className="px-4 pt-4">
+          <h3 className="text-[16px] font-bold text-[#1D3557]">
+            Audit Readiness
+          </h3>
         </div>
 
+        {/* Content */}
+        <div className="flex flex-col flex-1">
+          {/* Gauge */}
+          <div className="flex-1 flex items-center justify-center px-4">
+            <div className="relative w-full max-w-105 aspect-13/6">
+              <svg
+                viewBox="-10 32 280 110"
+                className="w-full h-auto overflow-visible"
+              >
+                <path
+                  d="M 30 140 A 100 100 0 0 1 230 140"
+                  fill="none"
+                  stroke="#E6EBF0"
+                  strokeWidth="14"
+                  strokeLinecap="round"
+                />
+
+                <path
+                  d="M 30 140 A 100 100 0 0 1 230 140"
+                  fill="none"
+                  stroke="#2E9B4F"
+                  strokeWidth="14"
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                />
+              </svg>
+
+              {/* Center Text */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center top-[30%] gap-4">
+                <span className="text-[40px] font-bold text-[#1D3557]">
+                  {progress}%
+                </span>
+                <span className="text-[13px] text-[#8597A8]">
+                  Readiness Level
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-[#E0E8ED] mx-6" />
+
+          {/* Bottom Stats */}
+          <div className="flex justify-between px-10 py-4 mt-auto">
+            <div className="text-center">
+              <p className="text-[22px] font-bold text-[#1D3557]">12</p>
+              <p className="text-[13px] text-[#8597A8] mt-1">Overdue Tasks</p>
+            </div>
+
+            <div className="text-center">
+              <p className="text-[22px] font-bold text-[#1D3557]">5</p>
+              <p className="text-[13px] text-[#8597A8] mt-1">
+                Missing Evidence
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-
-    {/* Divider */}
-    <div className="border-t border-[#E0E8ED] mx-6" />
-
-    {/* Bottom Stats */}
-    <div className="flex justify-between px-10 py-4 mt-auto">
-      <div className="text-center">
-        <p className="text-[22px] font-bold text-[#1D3557]">12</p>
-        <p className="text-[13px] text-[#8597A8] mt-1">
-          Overdue Tasks
-        </p>
-      </div>
-
-      <div className="text-center">
-        <p className="text-[22px] font-bold text-[#1D3557]">5</p>
-        <p className="text-[13px] text-[#8597A8] mt-1">
-          Missing Evidence
-        </p>
-      </div>
-    </div>
-
-  </div>
-</div>
-
     </div>
   );
 }

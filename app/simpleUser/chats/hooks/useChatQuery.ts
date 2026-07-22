@@ -1,7 +1,7 @@
 // hooks/useChatQuery.ts
 import { useQuery } from "@tanstack/react-query";
 import { useAppDispatch } from "@/app/store/hooks";
-import { fetchAllChatsThunk, fetchChatMessagesThunk } from "@/app/store/ChatSlice";
+import { fetchAllChatsThunk } from "@/app/store/ChatSlice";
 import { fetchAllUsersThunk, User } from "@/app/store/AuthSlice";
 
 export const useChatQuery = (userInfo: User | null) => {

@@ -1,6 +1,5 @@
 // app/chat/page.tsx
 "use client";
-
 import React, { useEffect, useRef, useState } from "react";
 import ChatHeader from "./components/ChatHeader";
 import ChatMessages from "./components/ChatMessages";
