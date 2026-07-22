@@ -17,7 +17,6 @@ export default function ProgressBarSection() {
         <h2 className="text-[16px] font-bold text-[#1D3557]">
           Project Timeline
         </h2>
-
         <Select defaultValue="2026">
           <SelectTrigger className="w-full sm:w-[110px] h-[36px] border border-[#E0E8ED] bg-white text-[14px] text-[#1D3557]">
             <SelectValue />
@@ -54,9 +53,7 @@ export default function ProgressBarSection() {
               className="flex flex-col items-center text-center w-[140px]"
             > 
              <div
-                className={`w-3.5 h-3.5 rounded-full  ${!item.active ? "bg-[#DB1F26]":"bg-white"}`}
-               
-              />
+                className={`w-3.5 h-3.5 rounded-full  ${!item.active ? "bg-[#DB1F26]":"bg-white"}`}/>
               {/* <div
                 className="w-3.5 h-3.5 rounded-full bg-white"
                 style={{

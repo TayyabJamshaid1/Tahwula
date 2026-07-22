@@ -129,14 +129,12 @@ export default function PerformanceSection() {
 
           {/* Divider */}
           <div className="border-t border-[#E0E8ED] mx-6" />
-
           {/* Bottom Stats */}
           <div className="flex justify-between px-10 py-4 mt-auto">
             <div className="text-center">
               <p className="text-[22px] font-bold text-[#1D3557]">12</p>
               <p className="text-[13px] text-[#8597A8] mt-1">Overdue Tasks</p>
             </div>
-
             <div className="text-center">
               <p className="text-[22px] font-bold text-[#1D3557]">5</p>
               <p className="text-[13px] text-[#8597A8] mt-1">

@@ -6,8 +6,6 @@ export default function PerformingPerspectiveLeaders() {
       </h3>
 
       <div className="space-y-2">
-        {/* <div className="border-b border-[#E0E8ED]" /> */}
-
         {/* Leader 1 */}
         <div className="flex items-center justify-between border-b pb-2 last:pb-0">
           <div className="flex items-center gap-3 w-[75%]">

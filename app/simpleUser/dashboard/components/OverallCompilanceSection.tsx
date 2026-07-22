@@ -47,7 +47,7 @@ export default function OverallCompilanceSection() {
                 {progress}{" "}%
               </span>
               <span className="text-[13px] text-[#8597A8]">
-                Basic Standards 2025{" "}
+                Basic Standards 2025  {" "}
               </span>
             </div>
           </div>
